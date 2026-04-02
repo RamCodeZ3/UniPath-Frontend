@@ -1,9 +1,9 @@
-import Login from "./pages/login/Login";
+import Auth from "./pages/auth/Auth";
 
 const routes = [
     {
         path: "/",
-        element: <Login/>
+        element: <Auth/>
     }
 ];
 
