@@ -192,7 +192,7 @@ export default function Auth() {
           </div>
 
           <div className={`transition-all duration-200 ease-out ${isTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">
+            <h2 className="text-xl font-bold text-gray-900 mb-1 mt-4">
               {isLogin ? '¡Qué bueno verte de vuelta!' : '¡Crea tu cuenta!'}
             </h2>
             <p className="text-gray-500 text-sm mb-4">
