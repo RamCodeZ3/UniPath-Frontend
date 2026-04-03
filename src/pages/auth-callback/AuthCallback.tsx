@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setUser, setProfile } from '../../config/store/auth/authSlice';
-import { getSession } from '../../shared/services/authService';
+import { setUser, setProfile } from '../../store/authSlice';
+import { getSession } from '../../shared/services/authService.ts';
 import { getProfile } from '../../shared/services/profileService';
 
 export default function AuthCallback() {
