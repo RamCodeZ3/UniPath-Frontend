@@ -1,13 +1,15 @@
-import { useEffect } from 'react';
+// AuthCallback.tsx
+import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setUser, setProfile } from '../../store/auth/authSlice.ts';
+import { setUser, setProfile, setEmailConfirmed,setLoading } from '../../store/auth/authSlice.ts';
 import { getSession } from '../../shared/services/authService.ts';
 import { getProfile } from '../../shared/services/profileService';
 
 export default function AuthCallback() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [userName, setUserName] = useState<string>('');
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -18,20 +20,30 @@ export default function AuthCallback() {
         return;
       }
 
-      dispatch(setUser(session.user));
+      const user = session.user;
+      const name = user.user_metadata?.full_name || user.email || 'Usuario';
+      setUserName(name);
 
-      const profile = await getProfile(session.user.id);
+      dispatch(setUser(user));
+      dispatch(setEmailConfirmed(!!user.email_confirmed_at)); // ← esto faltaba
+
+      const profile = await getProfile(user.id).catch(() => null);
       dispatch(setProfile(profile));
 
-      if (!profile?.birthdate || !profile?.genre || !profile?.number) {
-        navigate('/complete-profile');
-      } else {
+      dispatch(setLoading(false))
+
+      setTimeout(() => {
         navigate('/dashboard');
-      }
+      }, 5000);
     };
 
     handleCallback();
   }, []);
 
-  return <p>Cargando sesión...</p>;
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen gap-2">
+      <p className="text-xl font-semibold">¡Bienvenido, {userName}!</p>
+      <p className="text-gray-500 text-sm">Cargando sesión...</p>
+    </div>
+  );
 }
