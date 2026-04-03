@@ -1,4 +1,4 @@
-const ConfirmEmail = () => {
+export default function ConfirmEmail(){
   return (
     <>
       {/* Diseño de confirmación de correo electrónico */}
@@ -6,5 +6,3 @@ const ConfirmEmail = () => {
     </>
   );
 };
-
-export default ConfirmEmail;
