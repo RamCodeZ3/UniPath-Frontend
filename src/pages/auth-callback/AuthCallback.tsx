@@ -1,31 +1,26 @@
-// src/pages/auth-callback/AuthCallback.tsx
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import supabase from '../../config/supabase/supabase';
 import { setUser, setProfile } from '../../store/authSlice';
+import { getSession } from '../../shared/services/authService';
+import { getProfile } from '../../shared/services/profileService';
 
-const AuthCallback = () => {
+export default function AuthCallback() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleCallback = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const session = await getSession();
 
-      if (error || !session) {
-        navigate('/login');
+      if (!session) {
+        navigate('/');
         return;
       }
 
       dispatch(setUser(session.user));
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .single();
-
+      const profile = await getProfile(session.user.id);
       dispatch(setProfile(profile));
 
       if (!profile?.birthdate || !profile?.genre || !profile?.number) {
@@ -39,6 +34,4 @@ const AuthCallback = () => {
   }, []);
 
   return <p>Cargando sesión...</p>;
-};
-
-export default AuthCallback;
+}
