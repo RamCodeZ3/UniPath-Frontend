@@ -6,18 +6,14 @@ interface Props {
   children: React.ReactNode;
 }
 
-const ProtectedRoute = ({ children }: Props) => {
+export default function ProtectedRoute({ children }: Props) {
   const { user, emailConfirmed, loading } = useSelector(
     (state: RootState) => state.auth
   );
 
   if (loading) return <p>Cargando...</p>;
-
-  if (!user) return <Navigate to="/login" />;
-
+  if (!user) return <Navigate to="/" />;
   if (!emailConfirmed) return <Navigate to="/confirm-email" />;
 
-  return children;
-};
-
-export default ProtectedRoute;
+  return <>{children}</>;
+}
