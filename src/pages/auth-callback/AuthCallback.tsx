@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setUser, setProfile } from '../../config/store/auth/authSlice';
+import { setUser, setProfile } from '../../store/auth/authSlice';
 import { getSession } from '../../shared/services/authService';
 import { getProfile } from '../../shared/services/profileService';
 
