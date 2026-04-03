@@ -50,10 +50,6 @@ export default function Auth() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    console.log('Google sign-in');
-  };
-
   const isLogin = mode === 'login';
 
   return (
