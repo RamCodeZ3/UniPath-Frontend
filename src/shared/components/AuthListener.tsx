@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setUser, clearAuth } from '../../store/auth/authSlice';
+import { setUser, clearAuth, setLoading } from '../../store/auth/authSlice';
 import { getSession, onAuthStateChange } from '../services/authService';
 import { getProfile } from '../services/profileService';
 
@@ -14,6 +14,7 @@ export default function AuthListener() {
       if (session) {
         dispatch(setUser(session.user));
       }
+      dispatch(setLoading(false));
     });
 
     const { data: { subscription } } = onAuthStateChange(
