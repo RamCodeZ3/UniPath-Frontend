@@ -420,20 +420,24 @@ export const ProfileCreation = () => {
                 <div className="flex flex-col gap-2">
                   <Calendar
                     id="fechaNacimiento"
-                    value={formData.fechaNacimiento ? new Date(formData.fechaNacimiento) : null}
+                    value={formData.fechaNacimiento ? new Date(formData.fechaNacimiento + 'T00:00:00') : null}
                     onChange={(e) => {
                       const date = e.value as Date;
                       if (date) {
-                        const formatted = date.toISOString().split('T')[0];
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const formatted = `${year}-${month}-${day}`;
                         updateField('fechaNacimiento', formatted);
                       }
                     }}
                     dateFormat="dd/mm/yy"
                     showIcon
                     placeholder="DD/MM/AAAA"
-                    maxDate={new Date()}
+                    maxDate={new Date(new Date().getFullYear() - 13, new Date().getMonth(), new Date().getDate())}
+                    viewDate={new Date(2000, 0, 1)}
                     yearNavigator
-                    yearRange="1950:2024"
+                    yearRange="1940:2013"
                     className={`w-full ${errors.fechaNacimiento ? 'p-invalid' : ''}`}
                     inputClassName="p-3 text-base"
                   />
