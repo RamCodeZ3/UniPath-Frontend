@@ -1,12 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { loginSchema, registerSchema } from './auth.schema';
-import { signInWithGoogle } from '../../shared/services/authService';
+import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '../../shared/services/authService';
 
 type AuthMode = 'login' | 'register';
 
 export default function Auth() {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -16,6 +18,7 @@ export default function Auth() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleModeChange = (newMode: AuthMode) => {
     if (newMode === mode) return;
@@ -27,8 +30,10 @@ export default function Auth() {
     }, 200);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setErrors({});
+
     if (mode === 'login') {
       const result = loginSchema.safeParse({ email, password });
       if (!result.success) {
@@ -37,6 +42,23 @@ export default function Auth() {
           fieldErrors[issue.path[0] as string] = issue.message;
         });
         setErrors(fieldErrors);
+        return;
+      }
+
+      try {
+        setIsSubmitting(true);
+        const { user } = await signInWithEmail(email, password);
+
+        if (!user.email_confirmed_at) {
+          window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
+          return;
+        }
+
+        navigate('/profile/create', { replace: true });
+      } catch (err: any) {
+        setErrors({ form: err.message || 'Error al iniciar sesión' });
+      } finally {
+        setIsSubmitting(false);
       }
     } else {
       const result = registerSchema.safeParse({ name, email, password, confirmPassword });
@@ -46,7 +68,26 @@ export default function Auth() {
           fieldErrors[issue.path[0] as string] = issue.message;
         });
         setErrors(fieldErrors);
+        return;
       }
+
+      try {
+        setIsSubmitting(true);
+        await signUpWithEmail(email, password, name);
+        window.location.href = `/verify-email?email=${encodeURIComponent(email)}`;
+      } catch (err: any) {
+        setErrors({ form: err.message || 'Error al registrarse' });
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (err: any) {
+      setErrors({ form: err.message || 'Error con Google' });
     }
   };
 
@@ -182,7 +223,13 @@ export default function Auth() {
             </p>
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className={`space-y-3 transition-all duration-200 ease-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+          {errors.form && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-3">
+              {errors.form}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className={`space-y-3 transition-all duration-200 ease-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
             {!isLogin && (
               <div className="space-y-1">
                 <label htmlFor="name" className="text-sm font-medium text-gray-700">
@@ -304,6 +351,7 @@ export default function Auth() {
             <Button
               type="submit"
               label={isLogin ? 'Entrar' : 'Crear cuenta'}
+              loading={isSubmitting}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 border-none text-white font-semibold py-2 text-sm rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
             />
 
@@ -345,7 +393,7 @@ export default function Auth() {
 
           <button
             type="button"
-            onClick={signInWithGoogle}
+            onClick={handleGoogleAuth}
             className="w-full flex items-center justify-center gap-2 py-1.5 px-3 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors text-sm cursor-pointer"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">

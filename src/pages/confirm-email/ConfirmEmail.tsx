@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
+import { useSelector, useDispatch } from 'react-redux';
+import { getProfileWithStatus } from '../../shared/services/profileService';
+import { getSession } from '../../shared/services/authService';
+import { setUser, setEmailConfirmed, setProfile } from '../../store/auth/authSlice';
+import type { RootState } from '../../store/store';
 
-// Iconos SVG
 const SuccessIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -25,26 +29,57 @@ const SparkleIcon = ({ className, style }: { className?: string; style?: React.C
 
 export default function ConfirmEmail() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [countdown, setCountdown] = useState(5);
   const [showConfetti, setShowConfetti] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [localUser, setLocalUser] = useState<any>(null);
+  const storeUser = useSelector((state: RootState) => state.auth.user);
+  
+  // Usar el user del store si existe, sino el local
+  const user = storeUser || localUser;
+  const userEmail = user?.email;
 
-  // TODO: Obtener el email del servicio de auth
-  const userEmail = 'usuario@ejemplo.com';
+  // Obtener la sesión al cargar (importante para cuando viene del link de confirmación)
+  useEffect(() => {
+    const initSession = async () => {
+      try {
+        const session = await getSession();
+        if (session?.user) {
+          console.log('[ConfirmEmail] Sesión obtenida:', session.user.email);
+          setLocalUser(session.user);
+          dispatch(setUser(session.user));
+          dispatch(setEmailConfirmed(true));
+        } else {
+          console.log('[ConfirmEmail] No hay sesión, redirigiendo a /');
+          window.location.href = '/';
+        }
+      } catch (error) {
+        console.error('[ConfirmEmail] Error obteniendo sesión:', error);
+        window.location.href = '/';
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initSession();
+  }, [dispatch]);
 
   useEffect(() => {
-    // Countdown para redirección automática
+    // No iniciar countdown hasta que tengamos el email
+    if (isLoading || !userEmail) return;
+
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate('/profile/create');
+          redirectToNextStep();
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    // Ocultar confetti después de 3 segundos
     const confettiTimer = setTimeout(() => {
       setShowConfetti(false);
     }, 3000);
@@ -53,15 +88,44 @@ export default function ConfirmEmail() {
       clearInterval(timer);
       clearTimeout(confettiTimer);
     };
-  }, [navigate]);
+  }, [isLoading, userEmail]);
+
+  const redirectToNextStep = async () => {
+    if (!user) {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // Verificar si el perfil existe Y está completo
+    const { profile, isComplete } = await getProfileWithStatus(user.id).catch(() => ({ profile: null, isComplete: false }));
+    dispatch(setProfile(profile));
+
+    if (!isComplete) {
+      const nameFromMetadata = user.user_metadata?.name || profile?.name || '';
+      navigate(`/profile/create?step=2&prefillName=${encodeURIComponent(nameFromMetadata)}`, { replace: true });
+    } else {
+      navigate('/dashboard', { replace: true });
+    }
+  };
 
   const handleContinue = () => {
-    navigate('/profile/create');
+    redirectToNextStep();
   };
+
+  // Mostrar loading mientras obtiene la sesión
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="text-center">
+          <i className="pi pi-spin pi-spinner text-4xl text-blue-600 mb-4" />
+          <p className="text-gray-500">Verificando tu cuenta...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 relative overflow-hidden">
-      {/* Confetti animation */}
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none">
           {[...Array(12)].map((_, i) => (
@@ -80,9 +144,7 @@ export default function ConfirmEmail() {
       )}
 
       <div className="w-full max-w-md">
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-          {/* Success Icon */}
           <div className="relative inline-flex items-center justify-center mb-6">
             <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
               <SuccessIcon className="w-10 h-10 text-green-600" />
@@ -92,23 +154,19 @@ export default function ConfirmEmail() {
             </div>
           </div>
 
-          {/* Title */}
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             ¡Correo verificado!
           </h1>
           
-          {/* Subtitle */}
           <p className="text-gray-500 mb-6">
             Tu cuenta ha sido verificada exitosamente
           </p>
 
-          {/* Email badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full mb-6">
             <MailIcon className="w-4 h-4 text-gray-500" />
             <span className="text-sm text-gray-700 font-medium">{userEmail}</span>
           </div>
 
-          {/* Info card */}
           <div className="bg-blue-50 rounded-xl p-4 mb-6 text-left">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -123,7 +181,6 @@ export default function ConfirmEmail() {
             </div>
           </div>
 
-          {/* Continue button */}
           <Button
             label="Continuar"
             icon="pi pi-arrow-right"
@@ -132,13 +189,11 @@ export default function ConfirmEmail() {
             className="btn-primary w-full justify-center"
           />
 
-          {/* Auto redirect message */}
           <p className="text-xs text-gray-400 mt-4">
             Serás redirigido automáticamente en {countdown} segundos
           </p>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-xs text-gray-400 mt-6">
           ¿Tienes problemas? <a href="#" className="text-blue-600 hover:underline">Contacta soporte</a>
         </p>
