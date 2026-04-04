@@ -1,11 +1,16 @@
-import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import { Stepper } from 'primereact/stepper';
 import { StepperPanel } from 'primereact/stepperpanel';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
 import { profileSchema, type ProfileFormData } from './profile.schema';
+import { createProfile } from '../../shared/services/profileService';
+import { getSession } from '../../shared/services/authService';
+import { setUser, setEmailConfirmed } from '../../store/auth/authSlice';
+import type { RootState } from '../../store/store';
 
 const sexOptions = [
   { label: 'Masculino', value: 'masculino' },
@@ -14,7 +19,6 @@ const sexOptions = [
   { label: 'Prefiero no decir', value: 'prefiero_no_decir' },
 ];
 
-// Iconos SVG
 const UserIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -57,7 +61,6 @@ const CheckIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// Componente de tarjeta de paso
 interface StepCardProps {
   icon: React.ReactNode;
   title: string;
@@ -80,7 +83,6 @@ const StepCard = ({ icon, title, subtitle, children }: StepCardProps) => (
   </div>
 );
 
-// Componente de selección de género
 interface GenderOptionProps {
   icon: React.ReactNode;
   label: string;
@@ -120,7 +122,6 @@ const GenderOption = ({ icon, label, selected, onSelect, variant }: GenderOption
   );
 };
 
-// Indicador de progreso personalizado
 interface ProgressIndicatorProps {
   currentStep: number;
   totalSteps: number;
@@ -142,23 +143,69 @@ const ProgressIndicator = ({ currentStep, totalSteps }: ProgressIndicatorProps) 
 
 export const ProfileCreation = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
   const stepperRef = useRef<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [localUser, setLocalUser] = useState<any>(null);
+  const storeUser = useSelector((state: RootState) => state.auth.user);
   
+  // Usar el user del store si existe, sino el local
+  const user = storeUser || localUser;
+  const userEmail = user?.email;
+
+  const startStepParam = parseInt(searchParams.get('step') || '1', 10);
+  const prefillName = searchParams.get('prefillName') || '';
+  const initialStep = Math.min(Math.max(startStepParam - 1, 0), 4);
+
   const [formData, setFormData] = useState<Partial<ProfileFormData>>({
-    nombre: '',
+    nombre: prefillName || '',
     fechaNacimiento: '',
     telefono: '',
     sexo: undefined,
   });
 
-  // TODO: Obtener el email del servicio de auth
-  const userEmail = 'usuario@ejemplo.com';
-
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(initialStep);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  // Obtener la sesión al cargar
+  useEffect(() => {
+    const initSession = async () => {
+      try {
+        const session = await getSession();
+        if (session?.user) {
+          console.log('[ProfileCreation] Sesión obtenida:', session.user.email);
+          setLocalUser(session.user);
+          dispatch(setUser(session.user));
+          dispatch(setEmailConfirmed(!!session.user.email_confirmed_at));
+        } else {
+          console.log('[ProfileCreation] No hay sesión, redirigiendo a /');
+          window.location.href = '/';
+        }
+      } catch (error) {
+        console.error('[ProfileCreation] Error obteniendo sesión:', error);
+        window.location.href = '/';
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initSession();
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (initialStep > 0 && !isLoading) {
+      setTimeout(() => {
+        for (let i = 0; i < initialStep; i++) {
+          stepperRef.current?.nextCallback();
+        }
+      }, 100);
+    }
+  }, [isLoading, initialStep]);
 
   const validateStep = (step: number): boolean => {
-    // El paso 4 (resumen) no necesita validación
     if (step === 4) return true;
     
     const fieldsToValidate: Record<number, (keyof ProfileFormData)[]> = {
@@ -218,7 +265,7 @@ export const ProfileCreation = () => {
     setErrors({});
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const result = profileSchema.safeParse(formData);
     
     if (!result.success) {
@@ -230,8 +277,26 @@ export const ProfileCreation = () => {
       return;
     }
 
-    console.log('Profile data:', result.data);
-    navigate('/dashboard');
+    if (!user) {
+      setSubmitError('No hay sesión activa');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setSubmitError('');
+      await createProfile(user.id, {
+        name: result.data.nombre,
+        birthdate: result.data.fechaNacimiento,
+        number: result.data.telefono,
+        genre: result.data.sexo,
+      });
+      navigate('/dashboard', { replace: true });
+    } catch (err: any) {
+      setSubmitError(err.message || 'Error al crear el perfil');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const updateField = (field: keyof ProfileFormData, value: any) => {
@@ -241,7 +306,6 @@ export const ProfileCreation = () => {
     }
   };
 
-  // Handler para tecla Enter
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -253,7 +317,6 @@ export const ProfileCreation = () => {
     }
   };
 
-  // Obtener iniciales del nombre para el avatar
   const getInitials = (name: string) => {
     if (!name) return '?';
     const parts = name.trim().split(' ').filter(Boolean);
@@ -263,7 +326,6 @@ export const ProfileCreation = () => {
     return name.substring(0, 2).toUpperCase();
   };
 
-  // Calcular edad desde fecha de nacimiento
   const getAge = (birthDate: string) => {
     if (!birthDate) return null;
     const today = new Date();
@@ -276,10 +338,21 @@ export const ProfileCreation = () => {
     return age;
   };
 
+  // Mostrar loading mientras obtiene la sesión
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="text-center">
+          <i className="pi pi-spin pi-spinner text-4xl text-blue-600 mb-4" />
+          <p className="text-gray-500">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600 text-white mb-4">
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -292,16 +365,19 @@ export const ProfileCreation = () => {
           <p className="text-gray-500 mt-1">Cuéntanos un poco sobre ti</p>
         </div>
 
-        {/* Progress Indicator */}
         <ProgressIndicator currentStep={currentStep} totalSteps={5} />
 
-        {/* Card Container */}
         <div 
           className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
           onKeyDown={handleKeyDown}
         >
+          {submitError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-4">
+              {submitError}
+            </div>
+          )}
+
           <Stepper ref={stepperRef} linear>
-            {/* Paso 1: Nombre */}
             <StepperPanel>
               <StepCard
                 icon={<UserIcon className="w-8 h-8" />}
@@ -335,7 +411,6 @@ export const ProfileCreation = () => {
               </div>
             </StepperPanel>
 
-            {/* Paso 2: Fecha de Nacimiento */}
             <StepperPanel>
               <StepCard
                 icon={<CalendarIcon className="w-8 h-8" />}
@@ -388,7 +463,6 @@ export const ProfileCreation = () => {
               </div>
             </StepperPanel>
 
-            {/* Paso 3: Teléfono */}
             <StepperPanel>
               <StepCard
                 icon={<PhoneIcon className="w-8 h-8" />}
@@ -429,7 +503,6 @@ export const ProfileCreation = () => {
               </div>
             </StepperPanel>
 
-            {/* Paso 4: Sexo */}
             <StepperPanel>
               <StepCard
                 icon={<UserIcon className="w-8 h-8" />}
@@ -437,7 +510,6 @@ export const ProfileCreation = () => {
                 subtitle="Selecciona una opción"
               >
                 <div className="flex flex-col gap-4">
-                  {/* Opciones principales */}
                   <div className="grid grid-cols-2 gap-3">
                     <GenderOption
                       icon={<MaleIcon className="w-full h-full" />}
@@ -455,7 +527,6 @@ export const ProfileCreation = () => {
                     />
                   </div>
 
-                  {/* Opciones secundarias */}
                   <div className="flex flex-col gap-2">
                     <button
                       type="button"
@@ -529,10 +600,8 @@ export const ProfileCreation = () => {
               </div>
             </StepperPanel>
 
-            {/* Paso 5: Resumen y Confirmación */}
             <StepperPanel>
               <div className="flex flex-col gap-6 py-4">
-                {/* Header con avatar */}
                 <div className="flex flex-col items-center text-center gap-4">
                   <div className="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                     {getInitials(formData.nombre || '')}
@@ -543,7 +612,6 @@ export const ProfileCreation = () => {
                   </div>
                 </div>
 
-                {/* Tarjeta de información */}
                 <div className="bg-gray-50 rounded-2xl p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center">
@@ -553,7 +621,6 @@ export const ProfileCreation = () => {
                   </div>
 
                   <div className="space-y-3">
-                    {/* Nombre */}
                     <div className="flex items-center gap-3 p-3 bg-white rounded-xl">
                       <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                         <UserIcon className="w-5 h-5 text-blue-600" />
@@ -564,7 +631,6 @@ export const ProfileCreation = () => {
                       </div>
                     </div>
 
-                    {/* Email */}
                     <div className="flex items-center gap-3 p-3 bg-white rounded-xl">
                       <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                         <i className="pi pi-envelope text-blue-600" />
@@ -575,7 +641,6 @@ export const ProfileCreation = () => {
                       </div>
                     </div>
 
-                    {/* Fecha de nacimiento */}
                     <div className="flex items-center gap-3 p-3 bg-white rounded-xl">
                       <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                         <CalendarIcon className="w-5 h-5 text-blue-600" />
@@ -590,7 +655,6 @@ export const ProfileCreation = () => {
                       </div>
                     </div>
 
-                    {/* Teléfono */}
                     <div className="flex items-center gap-3 p-3 bg-white rounded-xl">
                       <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                         <PhoneIcon className="w-5 h-5 text-blue-600" />
@@ -601,7 +665,6 @@ export const ProfileCreation = () => {
                       </div>
                     </div>
 
-                    {/* Sexo */}
                     <div className="flex items-center gap-3 p-3 bg-white rounded-xl">
                       <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                         {formData.sexo === 'masculino' ? (
@@ -622,7 +685,6 @@ export const ProfileCreation = () => {
                   </div>
                 </div>
 
-                {/* Mensaje de confirmación */}
                 <div className="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
                   <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <i className="pi pi-shield text-green-600 text-sm" />
@@ -647,6 +709,7 @@ export const ProfileCreation = () => {
                   icon="pi pi-check" 
                   iconPos="right" 
                   onClick={handleSubmit}
+                  loading={isSubmitting}
                   className="btn-success"
                 />
               </div>
@@ -654,7 +717,6 @@ export const ProfileCreation = () => {
           </Stepper>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-xs text-gray-400 mt-6">
           Tu información está protegida y solo se usa para personalizar tu experiencia
         </p>

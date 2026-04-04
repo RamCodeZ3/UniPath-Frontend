@@ -7,13 +7,14 @@ interface Props {
 }
 
 export default function ProtectedRoute({ children }: Props) {
-  const { user, emailConfirmed, loading } = useSelector(
+  const { user, emailConfirmed, profile, loading } = useSelector(
     (state: RootState) => state.auth
   );
 
   if (loading) return <p>Cargando...</p>;
-  if (!user) return <Navigate to="/" />;
-  if (!emailConfirmed) return <Navigate to="/confirm-email" />;
+  if (!user) return <Navigate to="/" replace />;
+  if (!emailConfirmed) return <Navigate to="/verify-email" replace />;
+  if (!profile) return <Navigate to="/profile/create" replace />;
 
   return <>{children}</>;
 }
