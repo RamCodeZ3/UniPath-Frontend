@@ -57,7 +57,6 @@ export interface UniversityFilters {
   modality?: UniversityModality[];
   accredited?: boolean | null;
   status?: UniversityStatus | '';
-  appliesToForeigners?: boolean | null;
   search?: string;
 }
 

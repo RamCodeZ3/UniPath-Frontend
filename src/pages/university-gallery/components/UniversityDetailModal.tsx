@@ -279,4 +279,4 @@ export const UniversityDetailModal = ({
   );
 };
 
-export default UniversityDetailModal;
+

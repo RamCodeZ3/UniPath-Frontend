@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { UniversityCard } from './components/UniversityCard';
@@ -6,7 +6,6 @@ import { UniversityFilters } from './components/UniversityFilters';
 import { UniversityDetailModal } from './components/UniversityDetailModal';
 import {
   getUniversitiesWithFilters,
-  getUniversitiesForForeigners,
   getUniversityWithRequirements,
 } from '../../shared/services/universityService';
 import { signOut } from '../../shared/services/authService';
@@ -36,7 +35,6 @@ const initialFilters: FilterType = {
   modality: [],
   accredited: null,
   status: '',
-  appliesToForeigners: null,
   search: '',
 };
 
@@ -45,7 +43,6 @@ export const UniversityGallery = () => {
   
   // Estados
   const [universities, setUniversities] = useState<SB_University[]>([]);
-  const [foreignerUniversityIds, setForeignerUniversityIds] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterType>(initialFilters);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityWithDetails | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -61,14 +58,8 @@ export const UniversityGallery = () => {
         setLoading(true);
         setError(null);
 
-        // Cargar universidades y IDs de extranjeros en paralelo
-        const [universitiesData, foreignerIds] = await Promise.all([
-          getUniversitiesWithFilters({}),
-          getUniversitiesForForeigners(),
-        ]);
-
+        const universitiesData = await getUniversitiesWithFilters({});
         setUniversities(universitiesData);
-        setForeignerUniversityIds(foreignerIds);
       } catch (err) {
         setError((err as Error).message || 'Error al cargar las universidades');
       } finally {
@@ -115,15 +106,8 @@ export const UniversityGallery = () => {
     fetchFilteredUniversities(initialFilters);
   }, [fetchFilteredUniversities]);
 
-  // Filtrar por extranjeros (localmente)
-  const filteredUniversities = useMemo(() => {
-    if (!filters.appliesToForeigners) {
-      return universities;
-    }
-    return universities.filter((uni) =>
-      foreignerUniversityIds.includes(uni.id)
-    );
-  }, [universities, filters.appliesToForeigners, foreignerUniversityIds]);
+  // Universidades filtradas
+  const filteredUniversities = universities;
 
   // Abrir modal con detalle
   const handleCardClick = useCallback(async (university: SB_University) => {
@@ -181,13 +165,11 @@ export const UniversityGallery = () => {
                 badge={
                   (filters.type ? 1 : 0) +
                   (filters.modality?.length || 0) +
-                  (filters.status ? 1 : 0) +
-                  (filters.appliesToForeigners ? 1 : 0)
+                  (filters.status ? 1 : 0)
                     ? String(
                         (filters.type ? 1 : 0) +
                           (filters.modality?.length || 0) +
-                          (filters.status ? 1 : 0) +
-                          (filters.appliesToForeigners ? 1 : 0)
+                          (filters.status ? 1 : 0)
                       )
                     : undefined
                 }
@@ -361,4 +343,4 @@ export const UniversityGallery = () => {
   );
 };
 
-export default UniversityGallery;
+

@@ -105,4 +105,4 @@ export const UniversityCard = ({ university, onClick }: UniversityCardProps) => 
   );
 };
 
-export default UniversityCard;
+

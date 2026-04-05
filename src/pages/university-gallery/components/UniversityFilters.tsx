@@ -1,6 +1,5 @@
 import { Dropdown } from 'primereact/dropdown';
 import { Checkbox } from 'primereact/checkbox';
-import { InputSwitch } from 'primereact/inputswitch';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import type { UniversityFilters as FilterType, UniversityModality } from '../../../shared/models/universityModel';
@@ -52,10 +51,6 @@ export const UniversityFilters = ({
     onFilterChange({ ...filters, status: value as FilterType['status'] });
   };
 
-  const handleForeignerToggle = (value: boolean) => {
-    onFilterChange({ ...filters, appliesToForeigners: value ? true : null });
-  };
-
   const handleSearchChange = (value: string) => {
     onFilterChange({ ...filters, search: value });
   };
@@ -64,7 +59,6 @@ export const UniversityFilters = ({
     filters.type ||
     (filters.modality && filters.modality.length > 0) ||
     filters.status ||
-    filters.appliesToForeigners ||
     filters.search;
 
   return (
@@ -161,25 +155,6 @@ export const UniversityFilters = ({
         />
       </div>
 
-      {/* Toggle para extranjeros */}
-      <div className="pt-4 border-t border-gray-100">
-        <div className="flex items-center justify-between">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Soy extranjero
-            </label>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Mostrar solo universidades que aceptan extranjeros
-            </p>
-          </div>
-          <InputSwitch
-            checked={filters.appliesToForeigners ?? false}
-            onChange={(e) => handleForeignerToggle(e.value)}
-            disabled={loading}
-          />
-        </div>
-      </div>
-
       {/* Indicador de filtros activos */}
       {hasActiveFilters && (
         <div className="mt-6 pt-4 border-t border-gray-100">
@@ -193,4 +168,4 @@ export const UniversityFilters = ({
   );
 };
 
-export default UniversityFilters;
+
