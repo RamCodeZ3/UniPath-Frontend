@@ -5,6 +5,7 @@ import ConfirmEmail from './pages/confirm-email/ConfirmEmail';
 import VerifyEmail from './pages/verify-email/VerifyEmail';
 import Dashboard from './pages/dashboard/Dashboard';
 import { ProfileCreation } from './pages/profile-creation';
+import { UniversityGallery } from './pages/university-gallery';
 import ProtectedRoute from './shared/components/ProtectedRoute';
 import AuthListener from './shared/components/AuthListener';
 
@@ -46,6 +47,14 @@ const routes = [
         element: (
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/universities',
+        element: (
+          <ProtectedRoute>
+            <UniversityGallery />
           </ProtectedRoute>
         ),
       },

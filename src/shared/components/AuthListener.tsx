@@ -77,11 +77,20 @@ export default function AuthListener() {
 
     console.log('[AuthListener] Inicializando, ruta actual:', currentPath);
 
-    getSession().then((session) => {
+    getSession().then(async (session) => {
       if (session) {
         console.log('[AuthListener] Sesión encontrada:', session.user.email);
         dispatch(setUser(session.user));
         dispatch(setEmailConfirmed(!!session.user.email_confirmed_at));
+        
+        // Cargar el profile para cualquier ruta (necesario para ProtectedRoute)
+        try {
+          const { profile } = await getProfileWithStatus(session.user.id);
+          dispatch(setProfile(profile));
+        } catch (err) {
+          console.error('[AuthListener] Error cargando profile:', err);
+          dispatch(setProfile(null));
+        }
         
         // Solo redirigir automáticamente si estamos en la página de login (/)
         // y el usuario ya tiene sesión
