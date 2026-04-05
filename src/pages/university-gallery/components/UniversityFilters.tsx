@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Checkbox } from 'primereact/checkbox';
 import { InputText } from 'primereact/inputtext';
@@ -29,7 +30,7 @@ const SearchIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export const UniversityFilters = ({
+export const UniversityFilters = memo(({
   filters,
   onFilterChange,
   onClearFilters,
@@ -95,7 +96,6 @@ export const UniversityFilters = ({
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Nombre o siglas..."
             className="w-full pl-10 p-2.5 text-sm"
-            disabled={loading}
           />
         </div>
       </div>
@@ -112,6 +112,12 @@ export const UniversityFilters = ({
           placeholder="Seleccionar tipo"
           className="w-full"
           disabled={loading}
+          pt={{
+            root: { className: 'h-11' },
+            input: { className: 'py-2.5 px-3' },
+            trigger: { className: 'w-10' },
+            item: { className: 'py-2.5 px-3' },
+          }}
         />
       </div>
 
@@ -152,6 +158,12 @@ export const UniversityFilters = ({
           placeholder="Seleccionar estado"
           className="w-full"
           disabled={loading}
+          pt={{
+            root: { className: 'h-11' },
+            input: { className: 'py-2.5 px-3' },
+            trigger: { className: 'w-10' },
+            item: { className: 'py-2.5 px-3' },
+          }}
         />
       </div>
 
@@ -166,6 +178,8 @@ export const UniversityFilters = ({
       )}
     </div>
   );
-};
+});
+
+UniversityFilters.displayName = 'UniversityFilters';
 
 

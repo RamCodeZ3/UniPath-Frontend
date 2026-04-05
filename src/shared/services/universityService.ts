@@ -1,6 +1,11 @@
 import supabase from "../../config/supabase/supabase";
 import type { SB_University, UniversityFilters, UniversityWithDetails } from "../models/universityModel";
 
+// Función para normalizar texto (quitar tildes)
+const normalizeText = (text: string): string => {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+};
+
 export const getAllUniversities = async (): Promise<SB_University[]> => {
     const { data, error } = await supabase
         .from("universities")
@@ -38,16 +43,19 @@ export const getUniversitiesWithFilters = async (
         query = query.eq("status", filters.status);
     }
 
-    // Filtro por búsqueda de texto
-    if (filters.search) {
-        query = query.or(
-            `name.ilike.%${filters.search}%,acronym.ilike.%${filters.search}%`
-        );
-    }
-
     const { data, error } = await query;
 
     if (error) throw new Error(`Error al filtrar universidades: ${error.message}`);
+
+    // Filtro por búsqueda de texto (local, sin importar tildes)
+    if (filters.search && data) {
+        const normalizedSearch = normalizeText(filters.search);
+        return data.filter((uni) => {
+            const normalizedName = normalizeText(uni.name || "");
+            const normalizedAcronym = normalizeText(uni.acronym || "");
+            return normalizedName.includes(normalizedSearch) || normalizedAcronym.includes(normalizedSearch);
+        });
+    }
 
     return data || [];
 };

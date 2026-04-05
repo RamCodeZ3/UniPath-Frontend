@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useDeferredValue } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { UniversityCard } from './components/UniversityCard';
@@ -51,6 +51,9 @@ export const UniversityGallery = () => {
   const [error, setError] = useState<string | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
+  // Diferir el valor de búsqueda para no bloquear el input
+  const deferredSearch = useDeferredValue(filters.search);
+
   // Cargar datos iniciales
   useEffect(() => {
     const loadInitialData = async () => {
@@ -91,14 +94,29 @@ export const UniversityGallery = () => {
     }
   }, []);
 
-  // Handler para cambio de filtros
+  // Handler para cambio de filtros (sin búsqueda)
   const handleFilterChange = useCallback(
     (newFilters: FilterType) => {
       setFilters(newFilters);
-      fetchFilteredUniversities(newFilters);
+      // Solo hacer fetch inmediato si cambió algo que no sea search
+      if (
+        newFilters.type !== filters.type ||
+        newFilters.status !== filters.status ||
+        JSON.stringify(newFilters.modality) !== JSON.stringify(filters.modality)
+      ) {
+        fetchFilteredUniversities(newFilters);
+      }
     },
-    [fetchFilteredUniversities]
+    [fetchFilteredUniversities, filters]
   );
+
+  // Efecto para búsqueda diferida
+  useEffect(() => {
+    if (deferredSearch !== undefined) {
+      fetchFilteredUniversities({ ...filters, search: deferredSearch });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deferredSearch]);
 
   // Limpiar filtros
   const handleClearFilters = useCallback(() => {
