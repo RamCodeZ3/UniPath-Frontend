@@ -9,8 +9,10 @@ import type { MenuItem } from 'primereact/menuitem';
 
 export const Navbar = () => {
   const navigate = useNavigate();
-  const { profile } = useSelector((state: RootState) => state.auth);
+  const { profile, user } = useSelector((state: RootState) => state.auth);
   const menu = useRef<Menu>(null);
+
+  const userName = profile?.name || user?.user_metadata?.name || user?.user_metadata?.full_name || 'Usuario';
 
   const handleSignOut = async () => {
     await signOut();
@@ -74,7 +76,7 @@ export const Navbar = () => {
   ];
 
   const getInitials = (name: string) => {
-    if (!name) return '?';
+    if (!name || name === 'Usuario') return '?';
     const parts = name.trim().split(' ').filter(Boolean);
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -135,12 +137,12 @@ export const Navbar = () => {
               className="flex items-center gap-3 p-1.5 pr-3 rounded-full hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 group bg-transparent cursor-pointer"
             >
               <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm group-hover:scale-105 transition-transform duration-200">
-                {getInitials(profile?.full_name || 'Usuario')}
+                {getInitials(userName)}
               </div>
               
               <div className="hidden sm:flex flex-col items-start text-left">
                 <span className="text-sm font-semibold text-gray-900 leading-none group-hover:text-blue-600 transition-colors">
-                  {profile?.full_name || 'Usuario'}
+                  {userName}
                 </span>
                 <span className="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wider font-medium">
                   Estudiante
