@@ -26,7 +26,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      
       <header className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -47,7 +47,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Main content */}
+      
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -58,9 +58,9 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Cards de acceso rápido */}
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {/* Card de Universidades */}
+          
           <div
             onClick={() => navigate('/universities')}
             className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group"
@@ -81,6 +81,27 @@ export default function Dashboard() {
           </div>
 
           {/* Placeholder cards para futuras funcionalidades */}
+          {/* 
+            TODO: UI/UX - Integrar DocumentRecommender cuando esté lista la página de documentos
+            
+            Importar:
+            import DocumentRecommender from '../../shared/components/DocumentRecommender';
+            
+            Uso (requiere profileId y universityId):
+            <DocumentRecommender 
+              profileId={profile?.id} 
+              universityId={selectedUniversityId} 
+            />
+            
+            También se puede usar con Redux:
+            import { useDispatch, useSelector } from 'react-redux';
+            import { fetchRecommendDocuments } from '../../store/document/thunks';
+            import type { RootState } from '../../store/store';
+            
+            const dispatch = useDispatch();
+            const { recommendation, recommendationStatus } = useSelector((state: RootState) => state.document);
+            dispatch(fetchRecommendDocuments({ profileId, universityId }));
+          */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6 opacity-50">
             <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
               <i className="pi pi-file text-2xl text-gray-400" />

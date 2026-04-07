@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { Checkbox } from 'primereact/checkbox';
 import { InputText } from 'primereact/inputtext';
@@ -30,7 +29,7 @@ const SearchIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export const UniversityFilters = memo(({
+export const UniversityFilters = ({
   filters,
   onFilterChange,
   onClearFilters,
@@ -63,7 +62,7 @@ export const UniversityFilters = memo(({
     filters.search;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 sticky top-4">
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 sticky top-24">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
@@ -112,12 +111,6 @@ export const UniversityFilters = memo(({
           placeholder="Seleccionar tipo"
           className="w-full"
           disabled={loading}
-          pt={{
-            root: { className: 'h-11' },
-            input: { className: 'py-2.5 px-3' },
-            trigger: { className: 'w-10' },
-            item: { className: 'py-2.5 px-3' },
-          }}
         />
       </div>
 
@@ -158,12 +151,6 @@ export const UniversityFilters = memo(({
           placeholder="Seleccionar estado"
           className="w-full"
           disabled={loading}
-          pt={{
-            root: { className: 'h-11' },
-            input: { className: 'py-2.5 px-3' },
-            trigger: { className: 'w-10' },
-            item: { className: 'py-2.5 px-3' },
-          }}
         />
       </div>
 
@@ -178,8 +165,6 @@ export const UniversityFilters = memo(({
       )}
     </div>
   );
-});
-
-UniversityFilters.displayName = 'UniversityFilters';
+};
 
 

@@ -17,7 +17,7 @@ export interface SB_University {
 
 // Tipos para los filtros
 export type UniversityType = 'publica' | 'privada';
-export type UniversityModality = 'presencial' | 'virtual' | 'hibrida';
+export type UniversityModality = 'presencial' | 'virtual' | 'semipresencial';
 export type UniversityStatus = 'activa' | 'inactiva' | 'en_revision';
 
 // Requisitos de inscripción (tabla base)
@@ -58,6 +58,8 @@ export interface UniversityFilters {
   accredited?: boolean | null;
   status?: UniversityStatus | '';
   search?: string;
+  page?: number;
+  limit?: number;
 }
 
 // Opciones para los selects/dropdowns
@@ -70,7 +72,7 @@ export const UNIVERSITY_TYPE_OPTIONS = [
 export const UNIVERSITY_MODALITY_OPTIONS = [
   { label: 'Presencial', value: 'presencial' },
   { label: 'Virtual', value: 'virtual' },
-  { label: 'Híbrida', value: 'hibrida' },
+  { label: 'Semipresencial', value: 'semipresencial' },
 ] as const;
 
 export const UNIVERSITY_STATUS_OPTIONS = [
