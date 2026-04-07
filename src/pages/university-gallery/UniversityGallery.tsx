@@ -90,10 +90,7 @@ export const UniversityGallery = () => {
       const filterModalities = filterState.modality.map(m => normalizeText(m));
       result = result.filter(uni => {
         if (!uni.modality) return false;
-        // La modalidad es un string con valores separados por coma, ej: "Presencial, Semipresencial, Virtual"
-        // Normalizamos todo el string de la universidad
         const normalizedUniModality = normalizeText(uni.modality);
-        // Verificar si alguna de las modalidades del filtro está contenida en el string
         return filterModalities.some(fm => normalizedUniModality.includes(fm));
       });
     }
@@ -176,66 +173,8 @@ export const UniversityGallery = () => {
     setSelectedUniversity(null);
   }, []);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
-                <LogoIcon className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-gray-900">UniPath</span>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-4">
-              {/* Botón filtros móvil */}
-              <Button
-                icon="pi pi-filter"
-                className="lg:hidden"
-                outlined
-                severity="secondary"
-                onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-                badge={
-                  (filters.type ? 1 : 0) +
-                  (filters.modality?.length || 0) +
-                  (filters.status ? 1 : 0)
-                    ? String(
-                        (filters.type ? 1 : 0) +
-                          (filters.modality?.length || 0) +
-                          (filters.status ? 1 : 0)
-                      )
-                    : undefined
-                }
-              />
-              <Button
-                label="Cerrar sesión"
-                icon="pi pi-sign-out"
-                text
-                severity="secondary"
-                onClick={handleSignOut}
-                className="hidden sm:flex"
-              />
-              <Button
-                icon="pi pi-sign-out"
-                text
-                severity="secondary"
-                onClick={handleSignOut}
-                className="sm:hidden"
-              />
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-gray-50">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Título de página */}
         <div className="mb-8">
