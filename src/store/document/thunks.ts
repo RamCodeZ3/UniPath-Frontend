@@ -5,6 +5,7 @@ import {
     deleteDocument,
     uploadDocument
 } from '../../shared/services/documentServices';
+import { recommendDocuments } from '../../shared/services/documentRecommender';
 import type { SB_Documents } from '../../shared/models/documentModel';
 
 
@@ -56,6 +57,18 @@ export const fetchDeleteDocument = createAsyncThunk(
         try {
             await deleteDocument(documentId);
             return documentId;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
+
+export const fetchRecommendDocuments = createAsyncThunk(
+    'document/fetchRecommendDocuments',
+    async ({ profileId, universityId }: { profileId: string; universityId: string }, { rejectWithValue }) => {
+        try {
+            const result = await recommendDocuments(profileId, universityId);
+            return result;
         } catch (error) {
             return rejectWithValue(error);
         }

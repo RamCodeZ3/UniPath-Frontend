@@ -1,24 +1,29 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { SB_Documents } from '../../shared/models/documentModel';
+import type { SB_Documents, DocumentRecommendationResponse } from '../../shared/models/documentModel';
 import {
     fetchGetDocumentsByProfileId,
     fetchUploadDocument,
     fetchAddDocument,
     fetchDeleteDocument,
+    fetchRecommendDocuments,
 } from './thunks';
 
 export interface DocumentState {
     documents: SB_Documents[];
     uploadedUrl: string | null;
+    recommendation: DocumentRecommendationResponse | null;
     status: 'idle' | 'pending' | 'success' | 'failed';
+    recommendationStatus: 'idle' | 'pending' | 'success' | 'failed';
     error: string | null;
 }
 
 const initialState: DocumentState = {
     documents: [],
     uploadedUrl: null,
+    recommendation: null,
     status: 'idle',
+    recommendationStatus: 'idle',
     error: null,
 };
 
@@ -28,6 +33,10 @@ const documentSlice = createSlice({
     reducers: {
         clearUploadedUrl: (state) => {
             state.uploadedUrl = null;
+        },
+        clearRecommendation: (state) => {
+            state.recommendation = null;
+            state.recommendationStatus = 'idle';
         },
     },
     extraReducers: (builder) => {
@@ -82,9 +91,22 @@ const documentSlice = createSlice({
             .addCase(fetchDeleteDocument.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload as string ?? 'Error al eliminar el documento.';
+            })
+
+            .addCase(fetchRecommendDocuments.pending, (state) => {
+                state.recommendationStatus = 'pending';
+                state.error = null;
+            })
+            .addCase(fetchRecommendDocuments.fulfilled, (state, action: PayloadAction<DocumentRecommendationResponse>) => {
+                state.recommendationStatus = 'success';
+                state.recommendation = action.payload;
+            })
+            .addCase(fetchRecommendDocuments.rejected, (state, action) => {
+                state.recommendationStatus = 'failed';
+                state.error = action.payload as string ?? 'Error al obtener la recomendación.';
             });
     },
 });
 
-export const { clearUploadedUrl } = documentSlice.actions;
+export const { clearUploadedUrl, clearRecommendation } = documentSlice.actions;
 export default documentSlice.reducer;
