@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
+import { PrimeReactProvider } from 'primereact/api';
 import { store } from './store/store';
 import routes from './routes';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
@@ -14,7 +15,9 @@ const router = createBrowserRouter(routes);
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
-      <RouterProvider router={router} />
+      <PrimeReactProvider>
+        <RouterProvider router={router} />
+      </PrimeReactProvider>
     </Provider>
   </StrictMode>,
 );

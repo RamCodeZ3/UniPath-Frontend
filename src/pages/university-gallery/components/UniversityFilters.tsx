@@ -140,6 +140,7 @@ export const UniversityFilters = ({
       </div>
 
       {/* Estado */}
+    {/*}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Estado
@@ -152,7 +153,7 @@ export const UniversityFilters = ({
           className="w-full"
           disabled={loading}
         />
-      </div>
+      </div> */}
 
       {/* Indicador de filtros activos */}
       {hasActiveFilters && (
