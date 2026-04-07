@@ -5,3 +5,12 @@ export interface SB_Documents{
     type: string;
     document_path: string;
 }
+
+export interface DocumentRecommendationResponse {
+    answer: string;
+    documents_used: number;
+}
+
+export interface DocumentRecommendationError {
+    error: string;
+}
