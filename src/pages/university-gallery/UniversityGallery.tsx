@@ -80,20 +80,21 @@ export const UniversityGallery = () => {
     let result = [...universityList];
 
     if (filterState.type && typeof filterState.type === 'string' && filterState.type.trim() !== '') {
-      const filterType = filterState.type.toLowerCase().trim();
+      const filterType = normalizeText(filterState.type);
       result = result.filter(uni => 
-        uni.type && uni.type.toLowerCase().trim() === filterType
+        uni.type && normalizeText(uni.type) === filterType
       );
     }
 
     if (filterState.modality && filterState.modality.length > 0) {
-      const filterModalities = filterState.modality.map(m => m.toLowerCase().trim());
+      const filterModalities = filterState.modality.map(m => normalizeText(m));
       result = result.filter(uni => {
         if (!uni.modality) return false;
-        // La modalidad puede ser un string con múltiples valores separados por coma
-        const uniModalities = uni.modality.toLowerCase().split(',').map(m => m.trim());
-        // Verificar si alguna de las modalidades de la universidad coincide con los filtros
-        return filterModalities.some(fm => uniModalities.includes(fm));
+        // La modalidad es un string con valores separados por coma, ej: "Presencial, Semipresencial, Virtual"
+        // Normalizamos todo el string de la universidad
+        const normalizedUniModality = normalizeText(uni.modality);
+        // Verificar si alguna de las modalidades del filtro está contenida en el string
+        return filterModalities.some(fm => normalizedUniModality.includes(fm));
       });
     }
 
@@ -102,9 +103,9 @@ export const UniversityGallery = () => {
     }
 
     if (filterState.status && typeof filterState.status === 'string' && filterState.status.trim() !== '') {
-      const filterStatus = filterState.status.toLowerCase().trim();
+      const filterStatus = normalizeText(filterState.status);
       result = result.filter(uni => 
-        uni.status && uni.status.toLowerCase().trim() === filterStatus
+        uni.status && normalizeText(uni.status) === filterStatus
       );
     }
 
