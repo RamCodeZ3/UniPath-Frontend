@@ -1,11 +1,6 @@
 import supabase from "../../config/supabase/supabase";
 import type { SB_University, UniversityFilters, UniversityWithDetails } from "../models/universityModel";
 
-// Función para normalizar texto (quitar tildes)
-const normalizeText = (text: string): string => {
-    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-};
-
 export const getAllUniversities = async (): Promise<SB_University[]> => {
     const { data, error } = await supabase
         .from("universities")
@@ -20,8 +15,8 @@ export const getAllUniversities = async (): Promise<SB_University[]> => {
 // Obtener universidades con filtros
 export const getUniversitiesWithFilters = async (
     filters: UniversityFilters
-): Promise<SB_University[]> => {
-    let query = supabase.from("universities").select("*");
+): Promise<{ data: SB_University[]; total: number }> => {
+    let query = supabase.from("universities").select("*", { count: 'exact' });
 
     // Filtro por tipo
     if (filters.type) {
@@ -43,21 +38,28 @@ export const getUniversitiesWithFilters = async (
         query = query.eq("status", filters.status);
     }
 
-    const { data, error } = await query;
+    // Filtro por búsqueda de texto (Supabase ILIKE)
+    if (filters.search) {
+        query = query.or(
+            `name.ilike.%${filters.search}%,acronym.ilike.%${filters.search}%`
+        );
+    }
+
+    // Aplicar paginación
+    const limit = filters.limit || 12;
+    const page = filters.page || 1;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
 
     if (error) throw new Error(`Error al filtrar universidades: ${error.message}`);
 
-    // Filtro por búsqueda de texto (local, sin importar tildes)
-    if (filters.search && data) {
-        const normalizedSearch = normalizeText(filters.search);
-        return data.filter((uni) => {
-            const normalizedName = normalizeText(uni.name || "");
-            const normalizedAcronym = normalizeText(uni.acronym || "");
-            return normalizedName.includes(normalizedSearch) || normalizedAcronym.includes(normalizedSearch);
-        });
-    }
-
-    return data || [];
+    return {
+        data: data || [],
+        total: count || 0
+    };
 };
 
 // Obtener IDs de universidades que aceptan extranjeros
