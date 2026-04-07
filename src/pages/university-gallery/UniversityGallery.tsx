@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useDeferredValue } from 'react';
+import { useState, useEffect, useCallback, useDeferredValue, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { UniversityCard } from './components/UniversityCard';
 import { UniversityFilters } from './components/UniversityFilters';
 import { UniversityDetailModal } from './components/UniversityDetailModal';
 import {
-  getUniversitiesWithFilters,
+  getAllUniversities,
   getUniversityWithRequirements,
 } from '../../shared/services/universityService';
 import { signOut } from '../../shared/services/authService';
@@ -38,11 +38,16 @@ const initialFilters: FilterType = {
   search: '',
 };
 
+const ITEMS_PER_PAGE = 12;
+
+const normalizeText = (text: string): string => {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+};
+
 export const UniversityGallery = () => {
   const navigate = useNavigate();
   
-  // Estados
-  const [universities, setUniversities] = useState<SB_University[]>([]);
+  const [allUniversities, setAllUniversities] = useState<SB_University[]>([]);
   const [filters, setFilters] = useState<FilterType>(initialFilters);
   const [selectedUniversity, setSelectedUniversity] = useState<UniversityWithDetails | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -50,19 +55,17 @@ export const UniversityGallery = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Diferir el valor de búsqueda para no bloquear el input
   const deferredSearch = useDeferredValue(filters.search);
 
-  // Cargar datos iniciales
   useEffect(() => {
-    const loadInitialData = async () => {
+    const loadAllUniversities = async () => {
       try {
         setLoading(true);
         setError(null);
-
-        const universitiesData = await getUniversitiesWithFilters({});
-        setUniversities(universitiesData);
+        const data = await getAllUniversities();
+        setAllUniversities(data);
       } catch (err) {
         setError((err as Error).message || 'Error al cargar las universidades');
       } finally {
@@ -70,64 +73,86 @@ export const UniversityGallery = () => {
       }
     };
 
-    loadInitialData();
+    loadAllUniversities();
   }, []);
 
-  // Aplicar filtros
-  const fetchFilteredUniversities = useCallback(async (newFilters: FilterType) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const applyFilters = (filterState: FilterType, universityList: SB_University[]) => {
+    let result = [...universityList];
 
-      const data = await getUniversitiesWithFilters({
-        type: newFilters.type || undefined,
-        modality: newFilters.modality?.length ? newFilters.modality : undefined,
-        status: newFilters.status || undefined,
-        search: newFilters.search || undefined,
-      });
-
-      setUniversities(data);
-    } catch (err) {
-      setError((err as Error).message || 'Error al filtrar universidades');
-    } finally {
-      setLoading(false);
+    if (filterState.type && typeof filterState.type === 'string' && filterState.type.trim() !== '') {
+      const filterType = filterState.type.toLowerCase().trim();
+      result = result.filter(uni => 
+        uni.type && uni.type.toLowerCase().trim() === filterType
+      );
     }
-  }, []);
 
-  // Handler para cambio de filtros (sin búsqueda)
-  const handleFilterChange = useCallback(
-    (newFilters: FilterType) => {
-      setFilters(newFilters);
-      // Solo hacer fetch inmediato si cambió algo que no sea search
-      if (
-        newFilters.type !== filters.type ||
-        newFilters.status !== filters.status ||
-        JSON.stringify(newFilters.modality) !== JSON.stringify(filters.modality)
-      ) {
-        fetchFilteredUniversities(newFilters);
-      }
-    },
-    [fetchFilteredUniversities, filters]
+    if (filterState.modality && filterState.modality.length > 0) {
+      const filterModalities = filterState.modality.map(m => m.toLowerCase().trim());
+      result = result.filter(uni => {
+        if (!uni.modality) return false;
+        // La modalidad puede ser un string con múltiples valores separados por coma
+        const uniModalities = uni.modality.toLowerCase().split(',').map(m => m.trim());
+        // Verificar si alguna de las modalidades de la universidad coincide con los filtros
+        return filterModalities.some(fm => uniModalities.includes(fm));
+      });
+    }
+
+    if (filterState.accredited !== null && filterState.accredited !== undefined) {
+      result = result.filter(uni => uni.accredited === filterState.accredited);
+    }
+
+    if (filterState.status && typeof filterState.status === 'string' && filterState.status.trim() !== '') {
+      const filterStatus = filterState.status.toLowerCase().trim();
+      result = result.filter(uni => 
+        uni.status && uni.status.toLowerCase().trim() === filterStatus
+      );
+    }
+
+    if (filterState.search) {
+      const normalizedSearch = normalizeText(filterState.search);
+      result = result.filter(uni => {
+        const normalizedName = normalizeText(uni.name || '');
+        const normalizedAcronym = normalizeText(uni.acronym || '');
+        return normalizedName.includes(normalizedSearch) || normalizedAcronym.includes(normalizedSearch);
+      });
+    }
+
+    return result;
+  };
+
+  const filteredUniversities = useMemo(
+    () => applyFilters({ ...filters, search: deferredSearch }, allUniversities),
+    [filters.type, filters.modality, filters.status, filters.accredited, deferredSearch, allUniversities]
   );
 
-  // Efecto para búsqueda diferida
+  const totalItems = filteredUniversities.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+
+  const paginatedUniversities = useMemo(
+    () => filteredUniversities.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+    ),
+    [filteredUniversities, currentPage]
+  );
+
   useEffect(() => {
-    if (deferredSearch !== undefined) {
-      fetchFilteredUniversities({ ...filters, search: deferredSearch });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deferredSearch]);
+    setCurrentPage(1);
+  }, [filters.type, filters.modality, filters.accredited, filters.status, deferredSearch]);
 
-  // Limpiar filtros
-  const handleClearFilters = useCallback(() => {
+  const handleFilterChange = (newFilters: FilterType) => {
+    setFilters(newFilters);
+  };
+
+  const handleClearFilters = () => {
     setFilters(initialFilters);
-    fetchFilteredUniversities(initialFilters);
-  }, [fetchFilteredUniversities]);
+  };
 
-  // Universidades filtradas
-  const filteredUniversities = universities;
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
-  // Abrir modal con detalle
   const handleCardClick = useCallback(async (university: SB_University) => {
     setModalVisible(true);
     setModalLoading(true);
@@ -145,13 +170,11 @@ export const UniversityGallery = () => {
     }
   }, []);
 
-  // Cerrar modal
   const handleCloseModal = useCallback(() => {
     setModalVisible(false);
     setSelectedUniversity(null);
   }, []);
 
-  // Cerrar sesión
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
@@ -224,7 +247,7 @@ export const UniversityGallery = () => {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar de filtros - Desktop */}
+          {/* Sidebar de filtros - Desktop (izquierda) */}
           <aside className="hidden lg:block w-80 flex-shrink-0">
             <UniversityFilters
               filters={filters}
@@ -270,10 +293,18 @@ export const UniversityGallery = () => {
                 ) : (
                   <>
                     <span className="font-medium text-gray-900">
-                      {filteredUniversities.length}
+                      {totalItems}
                     </span>{' '}
-                    universidad{filteredUniversities.length !== 1 ? 'es' : ''} encontrada
-                    {filteredUniversities.length !== 1 ? 's' : ''}
+                    universidade{totalItems !== 1 ? 's' : ''} encontrada
+                    {totalItems !== 1 ? 's' : ''}
+                    {totalPages > 1 && (
+                      <>
+                        {' - '}
+                        <span className="font-medium text-gray-900">
+                          Página {currentPage} de {totalPages}
+                        </span>
+                      </>
+                    )}
                   </>
                 )}
               </p>
@@ -335,15 +366,64 @@ export const UniversityGallery = () => {
             )}
 
             {/* Grid de universidades */}
-            {!loading && filteredUniversities.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredUniversities.map((university) => (
-                  <UniversityCard
-                    key={university.id}
-                    university={university}
-                    onClick={handleCardClick}
-                  />
-                ))}
+            {!loading && paginatedUniversities.length > 0 && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {paginatedUniversities.map((university) => (
+                    <UniversityCard
+                      key={university.id}
+                      university={university}
+                      onClick={handleCardClick}
+                    />
+                  ))}
+                </div>
+
+                {/* Controles de paginación */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <Button
+                      icon="pi pi-chevron-left"
+                      outlined
+                      severity="secondary"
+                      disabled={currentPage === 1}
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className="w-10 h-10"
+                    />
+                    
+                    {[...Array(Math.min(totalPages, 5))].map((_, i) => {
+                      let pageNum: number;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          label={String(pageNum)}
+                          outlined={currentPage !== pageNum}
+                          severity={currentPage === pageNum ? undefined : 'secondary'}
+                          onClick={() => handlePageChange(pageNum)}
+                          className="w-10 h-10"
+                        />
+                      );
+                    })}
+                    
+                    <Button
+                      icon="pi pi-chevron-right"
+                      outlined
+                      severity="secondary"
+                      disabled={currentPage === totalPages}
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className="w-10 h-10"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>

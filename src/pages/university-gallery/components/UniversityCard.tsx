@@ -28,7 +28,7 @@ const getModalityLabel = (modality: string): string => {
   const labels: Record<string, string> = {
     presencial: 'Presencial',
     virtual: 'Virtual',
-    hibrida: 'Híbrida',
+    semipresencial: 'Semipresencial',
   };
   return labels[modality] || modality;
 };
@@ -45,7 +45,7 @@ const getModalityColor = (modality: string): string => {
   const colors: Record<string, string> = {
     presencial: 'bg-blue-100 text-blue-700',
     virtual: 'bg-purple-100 text-purple-700',
-    hibrida: 'bg-teal-100 text-teal-700',
+    semipresencial: 'bg-teal-100 text-teal-700',
   };
   return colors[modality] || 'bg-gray-100 text-gray-700';
 };
