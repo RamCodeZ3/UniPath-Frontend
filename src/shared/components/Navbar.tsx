@@ -31,7 +31,7 @@ export const Navbar = () => {
       template: (item, options) => {
           return (
               <button 
-                  onClick={(e) => { navigate('/profile/create'); options.onClick(e); }} 
+                  onClick={(e) => { navigate('/profile'); options.onClick(e); }} 
                   className="w-full flex items-center p-3 text-gray-700 hover:bg-gray-50 transition-colors border-none bg-transparent cursor-pointer"
               >
                   <span className={item.icon + ' mr-3 text-blue-600'}></span>

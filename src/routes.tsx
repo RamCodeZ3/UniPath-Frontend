@@ -63,6 +63,10 @@ const routes = [
             path: '/documents',
             element: <Documents />,
           },
+          {
+            path: '/profile',
+            element: <Profile />,
+          },
         ],
       },
     ],
