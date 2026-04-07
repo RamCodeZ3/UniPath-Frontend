@@ -1,12 +1,16 @@
 import { useNavigate, NavLink } from 'react-router-dom';
 import { Button } from 'primereact/button';
+import { Menu } from 'primereact/menu';
 import { signOut } from '../services/authService';
 import { useSelector } from 'react-redux';
+import { useRef } from 'react';
 import type { RootState } from '../../store/store';
+import type { MenuItem } from 'primereact/menuitem';
 
 export const Navbar = () => {
   const navigate = useNavigate();
   const { profile } = useSelector((state: RootState) => state.auth);
+  const menu = useRef<Menu>(null);
 
   const handleSignOut = async () => {
     await signOut();
@@ -16,8 +20,67 @@ export const Navbar = () => {
   const navLinks = [
     { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-home' },
     { label: 'Universidades', path: '/universities', icon: 'pi pi-building' },
-    { label: 'Documentos', path: '/documents', icon: 'pi pi-file' },
   ];
+
+  const userMenuItems: MenuItem[] = [
+    {
+      label: 'Mi Perfil',
+      icon: 'pi pi-user',
+      template: (item, options) => {
+          return (
+              <button 
+                  onClick={(e) => { navigate('/profile/create'); options.onClick(e); }} 
+                  className="w-full flex items-center p-3 text-gray-700 hover:bg-gray-50 transition-colors border-none bg-transparent cursor-pointer"
+              >
+                  <span className={item.icon + ' mr-3 text-blue-600'}></span>
+                  <span className="font-medium text-sm">{item.label}</span>
+              </button>
+          );
+      }
+    },
+    {
+      label: 'Mis Documentos',
+      icon: 'pi pi-file',
+      template: (item, options) => {
+          return (
+              <button 
+                  onClick={(e) => { navigate('/documents'); options.onClick(e); }} 
+                  className="w-full flex items-center p-3 text-gray-700 hover:bg-gray-50 transition-colors border-none bg-transparent cursor-pointer"
+              >
+                  <span className={item.icon + ' mr-3 text-blue-600'}></span>
+                  <span className="font-medium text-sm">{item.label}</span>
+              </button>
+          );
+      }
+    },
+    {
+      separator: true
+    },
+    {
+      label: 'Cerrar sesión',
+      icon: 'pi pi-sign-out',
+      template: (item, options) => {
+          return (
+              <button 
+                  onClick={(e) => { handleSignOut(); options.onClick(e); }} 
+                  className="w-full flex items-center p-3 text-red-600 hover:bg-red-50 transition-colors border-none bg-transparent cursor-pointer"
+              >
+                  <span className={item.icon + ' mr-3'}></span>
+                  <span className="font-medium text-sm">{item.label}</span>
+              </button>
+          );
+      }
+    }
+  ];
+
+  const getInitials = (name: string) => {
+    if (!name) return '?';
+    const parts = name.trim().split(' ').filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 1).toUpperCase();
+  };
 
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
@@ -57,39 +120,41 @@ export const Navbar = () => {
 
           {/* User Actions */}
           <div className="flex items-center gap-3">
-            {profile && (
-              <div className="hidden sm:flex flex-col items-end mr-2">
-                <span className="text-sm font-semibold text-gray-900 leading-none">
-                  {profile.full_name || 'Usuario'}
+            <Menu 
+              model={userMenuItems} 
+              popup 
+              ref={menu} 
+              id="popup_menu_user" 
+              className="w-56 shadow-xl border-gray-100 rounded-xl mt-2"
+            />
+            
+            <button
+              onClick={(e) => menu.current?.toggle(e)}
+              aria-controls="popup_menu_user"
+              aria-haspopup
+              className="flex items-center gap-3 p-1.5 pr-3 rounded-full hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 group bg-transparent cursor-pointer"
+            >
+              <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm group-hover:scale-105 transition-transform duration-200">
+                {getInitials(profile?.full_name || 'Usuario')}
+              </div>
+              
+              <div className="hidden sm:flex flex-col items-start text-left">
+                <span className="text-sm font-semibold text-gray-900 leading-none group-hover:text-blue-600 transition-colors">
+                  {profile?.full_name || 'Usuario'}
                 </span>
-                <span className="text-xs text-gray-500 mt-1">
+                <span className="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wider font-medium">
                   Estudiante
                 </span>
               </div>
-            )}
-            
-            <Button
-              icon="pi pi-sign-out"
-              label="Cerrar sesión"
-              text
-              severity="secondary"
-              onClick={handleSignOut}
-              className="hidden sm:flex text-sm"
-            />
-            
-            <Button
-              icon="pi pi-sign-out"
-              text
-              severity="secondary"
-              onClick={handleSignOut}
-              className="sm:hidden"
-            />
+              
+              <i className="pi pi-chevron-down text-[10px] text-gray-400 group-hover:text-blue-600 transition-colors ml-1" />
+            </button>
           </div>
         </div>
       </div>
       
       {/* Mobile Navigation (Simple version) */}
-      <nav className="md:hidden border-t border-gray-50 flex items-center justify-around py-2">
+      <nav className="md:hidden border-t border-gray-50 flex items-center justify-around py-2 bg-white/80 backdrop-blur-md">
         {navLinks.map((link) => (
           <NavLink
             key={link.path}
