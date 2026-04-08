@@ -84,7 +84,7 @@ export const UniversityDetailModal = ({
   if (!university) return null;
 
   const headerContent = (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-4 py-2 px-6">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-8 pb-2 px-6">
       <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 shadow-sm border border-blue-100">
         <BuildingIcon className="w-6 h-6 text-blue-600" />
       </div>
