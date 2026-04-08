@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Toast } from 'primereact/toast';
 import type { RootState, AppDispatch } from '../../../store/store';
-import { fetchCreateApplication, fetchCheckIfApplied } from '../../../store/application/thunks';
-import { resetApplyStatus } from '../../../store/application/applicationSlice';
+import { fetchCheckIfApplied } from '../../../store/application/thunks';
 
 interface ApplyButtonProps {
   universityId: string;
   universityName: string;
   profileId: string;
-  onApplySuccess?: () => void;
   variant?: 'primary' | 'secondary';
 }
 
@@ -40,15 +39,15 @@ export const ApplyButton = ({
   universityId,
   universityName,
   profileId,
-  onApplySuccess,
   variant = 'primary',
 }: ApplyButtonProps) => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const toastRef = useRef(null);
   const [isAlreadyApplied, setIsAlreadyApplied] = useState(false);
-  const [showError, setShowError] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
 
-  const { applyStatus, checkStatus, error: reduxError } = useSelector(
+  const { checkStatus } = useSelector(
     (state: RootState) => state.application
   );
   const userApplications = useSelector(
@@ -58,7 +57,10 @@ export const ApplyButton = ({
   // Verificar si ya aplicó al montar
   useEffect(() => {
     if (profileId && universityId) {
-      dispatch(fetchCheckIfApplied({ profileId, universityId }));
+      setIsChecking(true);
+      dispatch(fetchCheckIfApplied({ profileId, universityId })).finally(() =>
+        setIsChecking(false)
+      );
     }
   }, [profileId, universityId, dispatch]);
 
@@ -67,23 +69,6 @@ export const ApplyButton = ({
     const applied = userApplications[universityId] ?? false;
     setIsAlreadyApplied(applied);
   }, [userApplications, universityId]);
-
-  // Mostrar error en toast si falla la aplicación
-  useEffect(() => {
-    if (applyStatus === 'failed' && reduxError) {
-      const toastRef_current = toastRef.current as any;
-      if (toastRef_current) {
-        toastRef_current.show({
-          severity: 'error',
-          summary: 'Error',
-          detail: reduxError,
-          life: 4000,
-        });
-      }
-      setShowError(true);
-      setTimeout(() => setShowError(false), 3000);
-    }
-  }, [applyStatus, reduxError]);
 
   const handleApply = async () => {
     if (!profileId) {
@@ -112,74 +97,13 @@ export const ApplyButton = ({
       return;
     }
 
-    try {
-      // Crear aplicación - await the dispatch
-      const result = await dispatch(
-        fetchCreateApplication({
-          profileId,
-          universityId,
-        })
-      );
-
-      // Verificar si fue exitoso usando el tipo de acción exacto
-      if (result.type === 'application/fetchCreateApplication/fulfilled') {
-        // Éxito - actualizar estado local inmediatamente
-        setIsAlreadyApplied(true);
-        setShowError(false);
-        
-        const toastRef_current = toastRef.current as any;
-        if (toastRef_current) {
-          toastRef_current.show({
-            severity: 'success',
-            summary: '¡Éxito!',
-            detail: `¡Aplicación registrada exitosamente a ${universityName}!`,
-            life: 4000,
-          });
-        }
-
-        // Llamar callback si existe
-        if (onApplySuccess) {
-          onApplySuccess();
-        }
-
-        // Resetear el estado de Redux inmediatamente
-        dispatch(resetApplyStatus());
-      } else if (result.type === 'application/fetchCreateApplication/rejected') {
-        // Error - obtener el mensaje del payload
-        const errorMessage = (result.payload as string) || 'No se pudo registrar la aplicación';
-        
-        const toastRef_current = toastRef.current as any;
-        if (toastRef_current) {
-          toastRef_current.show({
-            severity: 'error',
-            summary: 'Error',
-            detail: errorMessage,
-            life: 3000,
-          });
-        }
-        // Resetear el estado de Redux después de mostrar el error
-        setShowError(true);
-        setTimeout(() => {
-          dispatch(resetApplyStatus());
-          setShowError(false);
-        }, 2000);
-      }
-    } catch (error) {
-      const toastRef_current = toastRef.current as any;
-      if (toastRef_current) {
-        toastRef_current.show({
-          severity: 'error',
-          summary: 'Error inesperado',
-          detail: 'Ocurrió un error al procesar tu solicitud',
-          life: 3000,
-        });
-      }
-      // Resetear el estado
-      dispatch(resetApplyStatus());
-    }
+    // Navegar a la página de aplicación con documentos
+    navigate(`/apply/${universityId}`, {
+      state: { universityName },
+    });
   };
 
-  const isLoading = applyStatus === 'pending' || checkStatus === 'pending';
+  const isLoading = checkStatus === 'pending' || isChecking;
   const isDisabled = isLoading || isAlreadyApplied;
 
   // Clases base
@@ -190,24 +114,19 @@ export const ApplyButton = ({
   const variantClasses =
     variant === 'primary'
       ? `${
-          showError
-            ? 'bg-red-600 text-white hover:bg-red-700'
-            : isAlreadyApplied
-              ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+          isAlreadyApplied
+            ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
+            : 'bg-blue-600 text-white hover:bg-blue-700'
         } w-full`
       : `${
-          showError
-            ? 'border border-red-600 text-red-600 hover:bg-red-50'
-            : isAlreadyApplied
-              ? 'border border-gray-300 text-gray-600 cursor-not-allowed'
-              : 'border border-blue-600 text-blue-600 hover:bg-blue-50'
+          isAlreadyApplied
+            ? 'border border-gray-300 text-gray-600 cursor-not-allowed'
+            : 'border border-blue-600 text-blue-600 hover:bg-blue-50'
         }`;
 
   const getButtonText = () => {
-    if (isLoading) return 'Registrando...';
+    if (isLoading) return 'Verificando...';
     if (isAlreadyApplied) return 'Ya aplicaste';
-    if (showError) return 'Ocurrió un error';
     return 'Aplicar a esta universidad';
   };
 
