@@ -16,7 +16,8 @@ export const fetchGetDocumentsByProfileId = createAsyncThunk(
             const documents = await getAllDocumentsByProfileId(profileId);
             return documents;
         } catch (error) {
-            return rejectWithValue(error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            return rejectWithValue(errorMessage);
         }
     }
 );
@@ -31,7 +32,8 @@ export const fetchUploadDocument = createAsyncThunk(
             const publicUrl = await uploadDocument(profileId, file, fileName);
             return publicUrl;
         } catch (error) {
-            return rejectWithValue(error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            return rejectWithValue(errorMessage);
         }
     }
 );
@@ -46,7 +48,8 @@ export const fetchAddDocument = createAsyncThunk(
             const newDocument = await createDocument(document);
             return newDocument;
         } catch (error) {
-            return rejectWithValue(error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            return rejectWithValue(errorMessage);
         }
     }
 );
@@ -58,7 +61,8 @@ export const fetchDeleteDocument = createAsyncThunk(
             await deleteDocument(documentId);
             return documentId;
         } catch (error) {
-            return rejectWithValue(error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            return rejectWithValue(errorMessage);
         }
     }
 );
@@ -70,7 +74,8 @@ export const fetchRecommendDocuments = createAsyncThunk(
             const result = await recommendDocuments(profileId, universityId);
             return result;
         } catch (error) {
-            return rejectWithValue(error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            return rejectWithValue(errorMessage);
         }
     }
 );

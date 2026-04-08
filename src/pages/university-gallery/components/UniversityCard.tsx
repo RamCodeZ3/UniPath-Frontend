@@ -1,4 +1,7 @@
+import { useSelector } from 'react-redux';
 import type { SB_University } from '../../../shared/models/universityModel';
+import type { RootState } from '../../../store/store';
+import { ApplyButton } from './ApplyButton';
 
 interface UniversityCardProps {
   university: SB_University;
@@ -51,10 +54,13 @@ const getModalityColor = (modality: string): string => {
 };
 
 export const UniversityCard = ({ university, onClick }: UniversityCardProps) => {
+  const { profile } = useSelector((state: RootState) => state.auth);
+  const profileId = profile?.id;
+
   return (
     <div
       onClick={() => onClick(university)}
-      className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group"
+      className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group flex flex-col"
     >
       {/* Header con icono y badges */}
       <div className="flex items-start justify-between mb-4">
@@ -93,7 +99,7 @@ export const UniversityCard = ({ university, onClick }: UniversityCardProps) => 
       )}
 
       {/* Tags de tipo y modalidad */}
-      <div className="flex flex-wrap gap-2 mt-auto">
+      <div className="flex flex-wrap gap-2 mb-4">
         <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
           {getTypeLabel(university.type)}
         </span>
@@ -101,6 +107,18 @@ export const UniversityCard = ({ university, onClick }: UniversityCardProps) => 
           {getModalityLabel(university.modality)}
         </span>
       </div>
+
+      {/* Botón Aplicar (al pie de la tarjeta) */}
+      {profileId && (
+        <div className="mt-auto pt-3 border-t border-gray-100" onClick={(e) => e.stopPropagation()}>
+          <ApplyButton
+            universityId={university.id}
+            universityName={university.name}
+            profileId={profileId}
+            variant="primary"
+          />
+        </div>
+      )}
     </div>
   );
 };
