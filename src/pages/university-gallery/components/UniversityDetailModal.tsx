@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
-import { useSelector } from 'react-redux';
 import type { UniversityWithDetails } from '../../../shared/models/universityModel';
 import type { SB_UniversityOverviews } from '../../../shared/models/universityOverviewsModel';
 import { createUniversityOverview } from '../../../shared/services/universityOverviewsService';
