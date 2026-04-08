@@ -1,6 +1,7 @@
 import supabase from '../../config/supabase/supabase';
 
 export interface Profile {
+  id: string;
   user_id: string;
   name: string | null;
   birthdate: string | null;
@@ -50,6 +51,7 @@ export const updateProfile = async (userId: string, updates: object) => {
     .from('profiles')
     .update(updates)
     .eq('user_id', userId)
+    .select()
     .single();
 
   if (error) throw new Error(error.message);

@@ -27,7 +27,6 @@ export default function AuthListener() {
     
     // No redirigir si estamos en una ruta del flujo de auth (a menos que se force)
     if (!forceRedirect && isAuthFlowRoute(currentPath)) {
-      console.log('[AuthListener] En ruta de auth flow, no redirigir:', currentPath);
       return;
     }
 
@@ -75,13 +74,18 @@ export default function AuthListener() {
 
     const currentPath = window.location.pathname;
 
-    console.log('[AuthListener] Inicializando, ruta actual:', currentPath);
-
-    getSession().then((session) => {
+    getSession().then(async (session) => {
       if (session) {
-        console.log('[AuthListener] Sesión encontrada:', session.user.email);
         dispatch(setUser(session.user));
         dispatch(setEmailConfirmed(!!session.user.email_confirmed_at));
+        
+        // Cargar el profile para cualquier ruta (necesario para ProtectedRoute)
+        try {
+          const { profile } = await getProfileWithStatus(session.user.id);
+          dispatch(setProfile(profile));
+        } catch (err) {
+          dispatch(setProfile(null));
+        }
         
         // Solo redirigir automáticamente si estamos en la página de login (/)
         // y el usuario ya tiene sesión
@@ -94,8 +98,6 @@ export default function AuthListener() {
 
     const { data: { subscription } } = onAuthStateChange(
       async (event, session) => {
-        console.log('[AuthListener] Auth event:', event, 'path:', window.location.pathname);
-        
         if (event === 'SIGNED_IN' && session) {
           dispatch(setUser(session.user));
           dispatch(setEmailConfirmed(!!session.user.email_confirmed_at));
