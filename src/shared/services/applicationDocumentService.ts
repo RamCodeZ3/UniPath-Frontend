@@ -116,6 +116,14 @@ export async function getUserDocuments(profileId: string): Promise<UserDocument[
   try {
     console.log('[getUserDocuments] Fetching for profile:', profileId);
 
+    // Verificar que el usuario esté autenticado
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    console.log('[getUserDocuments] Current session:', {
+      hasSession: !!session,
+      userId: session?.user?.id,
+      sessionError,
+    });
+
     const { data, error } = await supabase
       .from('documents')
       .select('id, profile_id, document_path, enrollment_requirement_id, created_at')
@@ -127,15 +135,19 @@ export async function getUserDocuments(profileId: string): Promise<UserDocument[
         code: error.code,
         message: error.message,
         details: error.details,
+        hint: error.hint,
       });
 
-      // Si hay error pero no es crítico, retornar array vacío
+      // Si hay error 400, es probable que sea RLS o un problema de permisos
+      // Registramos pero continuamos sin documentos
+      console.warn('[getUserDocuments] Could not fetch documents - returning empty array');
       return [];
     }
 
-    console.log('[getUserDocuments] Data:', data);
+    console.log('[getUserDocuments] Data retrieved successfully:', data);
 
     if (data && data.length > 0) {
+      console.log(`[getUserDocuments] Found ${data.length} documents for profile ${profileId}`);
       data.forEach((doc: UserDocument, index: number) => {
         // Normalize enrollment_requirement_id: trim, lowercase
         const normalizedId = (doc.enrollment_requirement_id || '').toString().trim().toLowerCase();
@@ -148,6 +160,8 @@ export async function getUserDocuments(profileId: string): Promise<UserDocument[
           type: typeof doc.enrollment_requirement_id,
         });
       });
+    } else {
+      console.log('[getUserDocuments] No documents found for this profile');
     }
 
     // Return with normalized IDs (trim and lowercase)
