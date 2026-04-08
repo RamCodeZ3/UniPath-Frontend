@@ -55,6 +55,9 @@ export default function ApplicationDocuments() {
   // Cargar requerimientos y documentos existentes
   useEffect(() => {
     const loadData = async () => {
+      console.log('[ApplicationDocuments] universityId:', universityId);
+      console.log('[ApplicationDocuments] profile:', profile);
+
       if (!universityId || !profile?.id) {
         const toastRef_current = toastRef.current as any;
         if (toastRef_current) {
@@ -73,15 +76,18 @@ export default function ApplicationDocuments() {
 
         // Obtener requerimientos de la universidad
         const requirements = await getUniversityRequirements(universityId);
+        console.log('[ApplicationDocuments] Requirements:', requirements);
 
         // Obtener documentos existentes del usuario
         const existingDocs = await getUserDocuments(profile.id);
+        console.log('[ApplicationDocuments] Existing docs:', existingDocs);
 
         // Hacer matching
         const matchedRequirements = matchRequirementsWithDocuments(
           requirements,
           existingDocs
         );
+        console.log('[ApplicationDocuments] Matched requirements:', matchedRequirements);
 
         setState((prev) => ({
           ...prev,
@@ -89,6 +95,7 @@ export default function ApplicationDocuments() {
           isLoading: false,
         }));
       } catch (error) {
+        console.error('[ApplicationDocuments] Error:', error);
         const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
         setState((prev) => ({
           ...prev,
@@ -148,18 +155,17 @@ export default function ApplicationDocuments() {
     try {
       setUploadingRequirementId(requirementId);
 
-      // Encontrar el requerimiento para obtener su descripción
+      // Encontrar el requerimiento para obtener su enrollment_requirement_id
       const requirement = state.requirements.find((r) => r.requirementId === requirementId);
       if (!requirement) {
         throw new Error('Requerimiento no encontrado');
       }
 
-      // Crear objeto de documento nuevo
+      // Crear objeto de documento nuevo con la nueva estructura
       const newDoc: NewDocumentToSave = {
         profile_id: profile.id,
-        document_name: file.name,
-        type: requirement.description, // El tipo es la descripción del requerimiento
         document_path: `${profile.id}/${file.name}`,
+        enrollment_requirement_id: requirement.enrollmentReqId, // ID del requerimiento de inscripción
         file: file,
       };
 
@@ -180,9 +186,8 @@ export default function ApplicationDocuments() {
                 existingDocument: {
                   id: 'temp-' + Date.now(),
                   profile_id: profile.id,
-                  document_name: file.name,
-                  type: requirement.description,
                   document_path: newDoc.document_path,
+                  enrollment_requirement_id: requirement.enrollmentReqId,
                 },
               }
             : req
@@ -241,7 +246,7 @@ export default function ApplicationDocuments() {
 
       // Navegar de vuelta
       setTimeout(() => {
-        navigate('/university-gallery', { replace: true });
+        navigate('/universities', { replace: true });
       }, 2000);
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
@@ -268,14 +273,14 @@ export default function ApplicationDocuments() {
     if (state.newDocumentsToSave.length > 0) {
       setShowDiscardModal(true);
     } else {
-      navigate('/university-gallery');
+      navigate('/universities');
     }
   };
 
   // Descartar cambios y ir atrás
   const handleDiscardChanges = () => {
     setShowDiscardModal(false);
-    navigate('/university-gallery');
+    navigate('/universities');
   };
 
   // Calcular completados

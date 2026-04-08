@@ -58,9 +58,12 @@ export const ApplyButton = ({
   useEffect(() => {
     if (profileId && universityId) {
       setIsChecking(true);
-      dispatch(fetchCheckIfApplied({ profileId, universityId })).finally(() =>
-        setIsChecking(false)
-      );
+      dispatch(fetchCheckIfApplied({ profileId, universityId }))
+        .catch((err) => {
+          // Silenciar error de CORS/RLS - el usuario puede intentar aplicar de todas formas
+          console.warn('[ApplyButton] Error checking if applied:', err);
+        })
+        .finally(() => setIsChecking(false));
     }
   }, [profileId, universityId, dispatch]);
 

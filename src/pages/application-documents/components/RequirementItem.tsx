@@ -36,7 +36,7 @@ export const RequirementItem = ({
           <p className="text-sm text-green-700 mt-1">✅ Ya lo tienes</p>
           {existingDoc && (
             <p className="text-xs text-gray-600 mt-2">
-              📄 {existingDoc.document_name}
+              📄 {existingDoc.document_path.split('/').pop()}
             </p>
           )}
           {requirement.notes && (

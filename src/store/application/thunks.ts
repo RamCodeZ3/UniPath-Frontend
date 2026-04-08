@@ -45,8 +45,7 @@ export const fetchGetUserApplications = createAsyncThunk(
 export const fetchCheckIfApplied = createAsyncThunk(
   'application/fetchCheckIfApplied',
   async (
-    { profileId, universityId }: { profileId: string; universityId: string },
-    { rejectWithValue }
+    { profileId, universityId }: { profileId: string; universityId: string }
   ) => {
     try {
       const applied = await isUserAppliedToUniversity(profileId, universityId);
@@ -56,8 +55,13 @@ export const fetchCheckIfApplied = createAsyncThunk(
       };
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      return rejectWithValue(errorMessage);
+      // Silenciar el error y retornar que no ha aplicado (para permitir flujo)
+      console.warn('[fetchCheckIfApplied] Error checking:', error);
+      const result: ApplicationCheckResult = {
+        universityId,
+        applied: false,
+      };
+      return result;
     }
   }
 );

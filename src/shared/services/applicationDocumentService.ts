@@ -1,5 +1,4 @@
 import supabase from '../../config/supabase/supabase';
-import type { SB_Documents } from '../models/documentModel';
 
 /**
  * Interface para un requerimiento de una universidad
@@ -13,13 +12,13 @@ export interface UniversityRequirement {
 
 /**
  * Interface para información de documentos del usuario
+ * Ahora directamente con enrollment_requirement_id
  */
 export interface UserDocument {
   id: string;
   profile_id: string;
-  document_name: string;
-  type: string;
   document_path: string;
+  enrollment_requirement_id: string;
   created_at?: string;
 }
 
@@ -34,77 +33,120 @@ export interface RequirementStatus extends UniversityRequirement {
 /**
  * Interface para documentos nuevos a guardar
  */
-export interface NewDocumentToSave extends Omit<SB_Documents, 'id'> {
+export interface NewDocumentToSave {
+  profile_id: string;
+  document_path: string;
+  enrollment_requirement_id: string;
   file: File;
 }
 
 /**
  * Obtener requerimientos de una universidad específica
- * Hace JOIN con enrollment_requirements para obtener descripción y notas
  */
 export async function getUniversityRequirements(
   universityId: string
 ): Promise<UniversityRequirement[]> {
   try {
-    const { data, error } = await supabase
+    console.log('[getUniversityRequirements] Fetching for university:', universityId);
+
+    // Primero obtener los university_requirements
+    const { data: urData, error: urError } = await supabase
       .from('university_requirements')
-      .select(
-        `
-        id,
-        requirement_id,
-        notes,
-        enrollment_requirements!inner(description)
-      `
-      )
+      .select('id, requirement_id, notes, university_id')
       .eq('university_id', universityId);
 
-    if (error) {
-      throw error;
+    if (urError) {
+      console.error('[getUniversityRequirements] Error fetching university_requirements:', urError);
+      throw urError;
     }
 
-    return (data || []).map((req: any) => ({
-      requirementId: req.id,
-      enrollmentReqId: req.requirement_id,
-      description: req.enrollment_requirements?.description || 'Desconocido',
-      notes: req.notes,
-    }));
+    console.log('[getUniversityRequirements] University requirements:', urData);
+
+    if (!urData || urData.length === 0) {
+      console.warn('[getUniversityRequirements] No requirements found for university:', universityId);
+      return [];
+    }
+
+    // Obtener todos los requirement_ids
+    const requirementIds = urData.map((ur: any) => ur.requirement_id);
+
+    // Luego obtener los enrollment_requirements
+    const { data: erData, error: erError } = await supabase
+      .from('enrollment_requirements')
+      .select('id, description')
+      .in('id', requirementIds);
+
+    if (erError) {
+      console.error('[getUniversityRequirements] Error fetching enrollment_requirements:', erError);
+      throw erError;
+    }
+
+    console.log('[getUniversityRequirements] Enrollment requirements:', erData);
+
+    // Mapear y combinar
+    return urData.map((ur: any) => {
+      const enrollmentReq = erData?.find((er: any) => er.id === ur.requirement_id);
+      return {
+        requirementId: ur.id,
+        enrollmentReqId: ur.requirement_id,
+        description: enrollmentReq?.description || 'Desconocido',
+        notes: ur.notes,
+      };
+    });
   } catch (error) {
-    console.error('Error obteniendo requerimientos:', error);
+    console.error('[getUniversityRequirements] Error:', error);
     throw error;
   }
 }
 
 /**
  * Obtener documentos existentes del usuario
+ * Ahora matchea por enrollment_requirement_id
  */
 export async function getUserDocuments(profileId: string): Promise<UserDocument[]> {
   try {
+    console.log('[getUserDocuments] Fetching for profile:', profileId);
+
     const { data, error } = await supabase
       .from('documents')
-      .select('id, profile_id, document_name, type, document_path, created_at')
+      .select('id, profile_id, document_path, enrollment_requirement_id, created_at')
       .eq('profile_id', profileId);
 
     if (error) {
-      throw error;
+      console.error('[getUserDocuments] Error:', error);
+      console.error('[getUserDocuments] Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+      });
+
+      // Si hay error pero no es crítico, retornar array vacío
+      return [];
     }
+
+    console.log('[getUserDocuments] Data:', data);
 
     return data || [];
   } catch (error) {
-    console.error('Error obteniendo documentos del usuario:', error);
-    throw error;
+    console.error('[getUserDocuments] Catch error:', error);
+    // Retornar vacío en caso de error para permitir continuar
+    return [];
   }
 }
 
 /**
  * Hacer matching entre requerimientos y documentos existentes
- * Retorna lista de requerimientos con información de si ya tiene documento
+ * Ahora el matching es directo por enrollment_requirement_id
  */
 export function matchRequirementsWithDocuments(
   requirements: UniversityRequirement[],
   documents: UserDocument[]
 ): RequirementStatus[] {
   return requirements.map((req) => {
-    const existingDoc = documents.find((doc) => doc.type === req.description);
+    // Buscar si existe un documento con el mismo enrollment_requirement_id
+    const existingDoc = documents.find(
+      (doc) => doc.enrollment_requirement_id === req.enrollmentReqId
+    );
 
     return {
       ...req,
@@ -116,7 +158,6 @@ export function matchRequirementsWithDocuments(
 
 /**
  * Subir archivo a Supabase Storage
- * Retorna la URL pública del archivo
  */
 export async function uploadDocumentToStorage(
   profileId: string,
@@ -148,8 +189,15 @@ export async function uploadDocumentToStorage(
 
 /**
  * Guardar lote de documentos en la tabla documents
+ * Nueva estructura: solo profile_id, document_path, enrollment_requirement_id
  */
-export async function saveBatchDocuments(documents: SB_Documents[]): Promise<void> {
+export async function saveBatchDocuments(
+  documents: Array<{
+    profile_id: string;
+    document_path: string;
+    enrollment_requirement_id: string;
+  }>
+): Promise<void> {
   try {
     const { error } = await supabase.from('documents').insert(documents);
 
@@ -199,25 +247,27 @@ export async function confirmApplicationWithDocuments(
   try {
     // 1. Subir archivos a storage
     const uploadPromises = newDocuments.map((doc) =>
-      uploadDocumentToStorage(profileId, doc.file, doc.document_name)
+      uploadDocumentToStorage(profileId, doc.file, doc.file.name)
     );
 
-    await Promise.all(uploadPromises);
+    const uploadedPaths = await Promise.all(uploadPromises);
+    console.log('[confirmApplicationWithDocuments] Uploaded paths:', uploadedPaths);
 
     // 2. Guardar registros en tabla documents
-    const docRecords: SB_Documents[] = newDocuments.map((doc) => ({
+    const docRecords = newDocuments.map((doc) => ({
       profile_id: doc.profile_id,
-      document_name: doc.document_name,
-      type: doc.type,
       document_path: doc.document_path,
+      enrollment_requirement_id: doc.enrollment_requirement_id,
     }));
 
     if (docRecords.length > 0) {
       await saveBatchDocuments(docRecords);
+      console.log('[confirmApplicationWithDocuments] Saved documents:', docRecords);
     }
 
     // 3. Crear registro en applications_for_admission
     await createApplicationRecord(profileId, universityId);
+    console.log('[confirmApplicationWithDocuments] Application created');
 
     return { success: true };
   } catch (error) {
