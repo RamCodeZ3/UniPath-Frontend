@@ -1,7 +1,10 @@
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
-import { useSelector } from 'react-redux';
 import type { UniversityWithDetails } from '../../../shared/models/universityModel';
+import type { SB_UniversityOverviews } from '../../../shared/models/universityOverviewsModel';
+import { createUniversityOverview } from '../../../shared/services/universityOverviewsService';
 import type { RootState } from '../../../store/store';
 import { ApplyButton } from './ApplyButton';
 
@@ -10,6 +13,7 @@ interface UniversityDetailModalProps {
   visible: boolean;
   onHide: () => void;
   loading?: boolean;
+  onReviewAdded?: (newReview: SB_UniversityOverviews) => void;
 }
 
 const BuildingIcon = ({ className }: { className?: string }) => (
@@ -83,11 +87,36 @@ export const UniversityDetailModal = ({
   visible,
   onHide,
   loading = false,
+  onReviewAdded,
 }: UniversityDetailModalProps) => {
   const { profile } = useSelector((state: RootState) => state.auth);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const profileId = profile?.id;
 
   if (!university) return null;
+
+  const handleAddReview = async () => {
+    if (!comment.trim() || !profile) return;
+
+    try {
+      setSubmitting(true);
+      const newReview = await createUniversityOverview({
+        comment: comment.trim(),
+        profile_id: profile.id,
+        university_id: university.id,
+      });
+
+      if (onReviewAdded) {
+        onReviewAdded(newReview);
+      }
+      setComment('');
+    } catch (err) {
+      console.error('Error adding review:', err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const headerContent = (
     <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-8 pb-2 px-6">
@@ -251,24 +280,53 @@ export const UniversityDetailModal = ({
             )}
 
           {/* Comentarios / Overviews */}
-          {university.overviews && university.overviews.length > 0 && (
-            <div className="border-t border-gray-100 pt-4">
-              <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
-                <i className="pi pi-comments text-blue-600" />
-                Reseñas ({university.overviews.length})
-              </h3>
-              <div className="space-y-3 max-h-48 overflow-y-auto">
-                {university.overviews.map((overview) => (
+          <div className="border-t border-gray-100 pt-4">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
+              <i className="pi pi-comments text-blue-600" />
+              Reseñas ({university.overviews?.length || 0})
+            </h3>
+            
+            {/* Formulario para nueva reseña */}
+            {profile && (
+              <div className="mb-4 space-y-2">
+                <textarea
+                  className="w-full p-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                  rows={2}
+                  placeholder="Escribe una reseña..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  disabled={submitting}
+                />
+                <div className="flex justify-end">
+                  <Button
+                    label="Enviar reseña"
+                    icon={submitting ? "pi pi-spin pi-spinner" : "pi pi-send"}
+                    size="small"
+                    className="btn-primary text-xs"
+                    onClick={handleAddReview}
+                    disabled={submitting || !comment.trim()}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
+              {university.overviews && university.overviews.length > 0 ? (
+                university.overviews.map((overview) => (
                   <div
                     key={overview.id}
-                    className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 italic"
+                    className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 italic border border-gray-100 shadow-sm"
                   >
                     "{overview.comment}"
                   </div>
-                ))}
-              </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-400 italic text-center py-4">
+                  No hay reseñas todavía. ¡Sé el primero en escribir una!
+                </p>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Botón Aplicar */}
           {profileId && (
