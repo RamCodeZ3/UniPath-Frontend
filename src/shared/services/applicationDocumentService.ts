@@ -1,4 +1,5 @@
 import supabase from '../../config/supabase/supabase';
+import type { SB_EnrollmentRequirement } from '../models/documentModel';
 
 /**
  * Interface para un requerimiento de una universidad
@@ -8,6 +9,7 @@ export interface UniversityRequirement {
   enrollmentReqId: string;
   description: string;
   notes?: string;
+  isStandard: boolean;
 }
 
 /**
@@ -37,6 +39,130 @@ export interface NewDocumentToSave {
   document_path: string;
   enrollment_requirement_id: string;
   file: File;
+}
+
+/**
+ * Obtener todos los documentos estándar (is_standard = true)
+ */
+export async function getStandardRequirements(): Promise<SB_EnrollmentRequirement[]> {
+  try {
+    console.log('[getStandardRequirements] Fetching standard requirements...');
+    
+    const { data, error } = await supabase
+      .from('enrollment_requirements')
+      .select('*')
+      .eq('is_standard', true);
+
+    if (error) {
+      console.error('[getStandardRequirements] Error:', error);
+      throw error;
+    }
+
+    console.log('[getStandardRequirements] Found:', data?.length || 0, 'standard requirements');
+    return data || [];
+  } catch (error) {
+    console.error('[getStandardRequirements] Error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener requerimientos adicionales de una universidad específica (no estándar)
+ */
+export async function getUniversityAdditionalRequirements(
+  universityId: string
+): Promise<UniversityRequirement[]> {
+  try {
+    console.log('[getUniversityAdditionalRequirements] Fetching for university:', universityId);
+
+    // Obtener university_requirements con sus enrollment_requirements
+    const { data: urData, error: urError } = await supabase
+      .from('university_requirements')
+      .select('id, requirement_id, notes, university_id')
+      .eq('university_id', universityId);
+
+    if (urError) {
+      console.error('[getUniversityAdditionalRequirements] Error:', urError);
+      throw urError;
+    }
+
+    if (!urData || urData.length === 0) {
+      console.log('[getUniversityAdditionalRequirements] No additional requirements found');
+      return [];
+    }
+
+    // Obtener los enrollment_requirements que NO son estándar
+    const requirementIds = urData.map((ur: any) => ur.requirement_id);
+    
+    const { data: erData, error: erError } = await supabase
+      .from('enrollment_requirements')
+      .select('id, description, is_standard')
+      .in('id', requirementIds)
+      .eq('is_standard', false);
+
+    if (erError) {
+      console.error('[getUniversityAdditionalRequirements] Error fetching enrollment_requirements:', erError);
+      throw erError;
+    }
+
+    // Mapear solo los adicionales (no estándar)
+    const result = urData
+      .filter((ur: any) => erData?.some((er: any) => er.id === ur.requirement_id))
+      .map((ur: any) => {
+        const enrollmentReq = erData?.find((er: any) => er.id === ur.requirement_id);
+        return {
+          requirementId: ur.id,
+          enrollmentReqId: (ur.requirement_id || '').toString().trim().toLowerCase(),
+          description: enrollmentReq?.description || 'Desconocido',
+          notes: ur.notes,
+          isStandard: false,
+        };
+      });
+
+    console.log('[getUniversityAdditionalRequirements] Found:', result.length, 'additional requirements');
+    return result;
+  } catch (error) {
+    console.error('[getUniversityAdditionalRequirements] Error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Obtener TODOS los requerimientos para una aplicación:
+ * - Documentos estándar (siempre requeridos)
+ * - Documentos adicionales de la universidad
+ */
+export async function getAllApplicationRequirements(
+  universityId: string
+): Promise<{ standard: UniversityRequirement[]; additional: UniversityRequirement[] }> {
+  try {
+    console.log('[getAllApplicationRequirements] Fetching all requirements for university:', universityId);
+
+    // Obtener estándar y adicionales en paralelo
+    const [standardReqs, additionalReqs] = await Promise.all([
+      getStandardRequirements(),
+      getUniversityAdditionalRequirements(universityId),
+    ]);
+
+    // Convertir estándar al formato UniversityRequirement
+    const standardMapped: UniversityRequirement[] = standardReqs.map((req) => ({
+      requirementId: req.id, // Para estándar, usamos el mismo ID
+      enrollmentReqId: req.id.toString().trim().toLowerCase(),
+      description: req.description,
+      notes: req.validity ? `Vigencia: ${req.validity}` : undefined,
+      isStandard: true,
+    }));
+
+    console.log('[getAllApplicationRequirements] Standard:', standardMapped.length, 'Additional:', additionalReqs.length);
+
+    return {
+      standard: standardMapped,
+      additional: additionalReqs,
+    };
+  } catch (error) {
+    console.error('[getAllApplicationRequirements] Error:', error);
+    throw error;
+  }
 }
 
 /**
@@ -90,6 +216,7 @@ export async function getUniversityRequirements(
         enrollmentReqId: (ur.requirement_id || '').toString().trim().toLowerCase(), // Normalize: trim and lowercase
         description: enrollmentReq?.description || 'Desconocido',
         notes: ur.notes,
+        isStandard: false, // Los que vienen de university_requirements son adicionales
       };
       console.log('[getUniversityRequirements] Mapped requirement:', {
         requirementId: mapped.requirementId,
@@ -367,6 +494,89 @@ export async function confirmApplicationWithDocuments(
     return { success: true };
   } catch (error) {
     console.error('Error confirmando aplicación:', error);
+    throw error;
+  }
+}
+
+/**
+ * Crear registro de aplicación y retornar el ID
+ */
+export async function createApplicationAndGetId(
+  profileId: string,
+  universityId: string
+): Promise<string> {
+  try {
+    const { data, error } = await supabase
+      .from('applications_for_admission')
+      .insert({
+        profile_id: profileId,
+        university_id: universityId,
+        status: 'pending',
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data.id;
+  } catch (error) {
+    console.error('Error creando aplicación:', error);
+    throw error;
+  }
+}
+
+/**
+ * Guardar documentos asociados a una aplicación en application_documents
+ */
+export async function saveApplicationDocuments(
+  applicationId: string,
+  documents: Array<{ document_id: string; enrollment_requirement_id: string }>
+): Promise<void> {
+  try {
+    const records = documents.map((doc) => ({
+      application_id: applicationId,
+      document_id: doc.document_id,
+      enrollment_requirement_id: doc.enrollment_requirement_id,
+    }));
+
+    const { error } = await supabase.from('application_documents').insert(records);
+
+    if (error) {
+      throw error;
+    }
+
+    console.log('[saveApplicationDocuments] Saved', records.length, 'application documents');
+  } catch (error) {
+    console.error('Error guardando application_documents:', error);
+    throw error;
+  }
+}
+
+/**
+ * FLUJO COMPLETO: Crear aplicación con todos los documentos vinculados
+ * 1. Crea registro en applications_for_admission
+ * 2. Guarda relaciones en application_documents
+ */
+export async function createApplicationWithDocuments(
+  profileId: string,
+  universityId: string,
+  documentsToLink: Array<{ document_id: string; enrollment_requirement_id: string }>
+): Promise<{ applicationId: string; success: boolean }> {
+  try {
+    // 1. Crear aplicación y obtener ID
+    const applicationId = await createApplicationAndGetId(profileId, universityId);
+    console.log('[createApplicationWithDocuments] Application created with ID:', applicationId);
+
+    // 2. Guardar relaciones de documentos
+    if (documentsToLink.length > 0) {
+      await saveApplicationDocuments(applicationId, documentsToLink);
+    }
+
+    return { applicationId, success: true };
+  } catch (error) {
+    console.error('Error en createApplicationWithDocuments:', error);
     throw error;
   }
 }

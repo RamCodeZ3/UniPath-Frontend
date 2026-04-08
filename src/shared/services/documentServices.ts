@@ -30,7 +30,6 @@ export const createDocument = async (
     document: Omit<SB_Documents, 'id' | 'created_at'>,
 ): Promise<SB_Documents> => {
     if (!document.profile_id) throw new Error("El profile_id es requerido");
-    if (!document.document_name) throw new Error("El document_name es requerido");
     if (!document.document_path) throw new Error("El document_path es requerido");
 
     const { data, error } = await supabase
