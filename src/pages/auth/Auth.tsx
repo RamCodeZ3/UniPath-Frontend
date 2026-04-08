@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
 import { loginSchema, registerSchema } from './auth.schema';
 import { signInWithGoogle, signInWithEmail, signUpWithEmail } from '../../shared/services/authService';
 
@@ -235,17 +237,17 @@ export default function Auth() {
                 <label htmlFor="name" className="text-sm font-medium text-gray-700">
                   Nombre completo
                 </label>
-                <div className="relative">
-                  <i className="pi pi-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10" style={{ fontSize: '12px' }} />
+                <IconField iconPosition="left" className="flex items-center">
+                  <InputIcon className="pi pi-user text-gray-400" style={{ fontSize: '14px' }} />
                   <InputText
                     id="name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Juan Pérez"
-                    className={`w-full pl-9 py-2 text-sm ${errors.name ? 'p-invalid' : ''}`}
+                    className={`w-full py-2 text-sm ${errors.name ? 'p-invalid' : ''}`}
                   />
-                </div>
+                </IconField>
                 {errors.name && (
                   <small className="text-red-500 text-xs flex items-center gap-1">
                     <i className="pi pi-exclamation-circle text-xs" />
@@ -259,17 +261,17 @@ export default function Auth() {
               <label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Correo electrónico
               </label>
-              <div className="relative">
-                <i className="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10" style={{ fontSize: '12px' }} />
+              <IconField iconPosition="left" className="flex items-center">
+                <InputIcon className="pi pi-envelope text-gray-400" style={{ fontSize: '14px' }} />
                 <InputText
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tucorreo@ejemplo.com"
-                  className={`w-full pl-9 py-2 text-sm ${errors.email ? 'p-invalid' : ''}`}
+                  className={`w-full py-2 text-sm ${errors.email ? 'p-invalid' : ''}`}
                 />
-              </div>
+              </IconField>
               {errors.email && (
                 <small className="text-red-500 text-xs flex items-center gap-1">
                   <i className="pi pi-exclamation-circle text-xs" />
@@ -283,19 +285,21 @@ export default function Auth() {
                 Contraseña
               </label>
               <div className="relative">
-                <i className="pi pi-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10" style={{ fontSize: '12px' }} />
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Escribe tu contraseña"
-                  className={`p-inputtext p-component w-full pl-9 pr-8 py-2 text-sm ${errors.password ? 'p-invalid' : ''}`}
-                />
+                <IconField iconPosition="left" className="flex items-center">
+                  <InputIcon className="pi pi-lock text-gray-400" style={{ fontSize: '14px' }} />
+                  <InputText
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Escribe tu contraseña"
+                    className={`w-full py-2 text-sm pr-10 ${errors.password ? 'p-invalid' : ''}`}
+                  />
+                </IconField>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 z-20"
                 >
                   <i className={`pi ${showPassword ? 'pi-eye-slash' : 'pi-eye'}`} style={{ fontSize: '12px' }} />
                 </button>
@@ -314,19 +318,21 @@ export default function Auth() {
                   Confirmar contraseña
                 </label>
                 <div className="relative">
-                  <i className="pi pi-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10" style={{ fontSize: '12px' }} />
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repite tu contraseña"
-                    className={`p-inputtext p-component w-full pl-9 pr-8 py-2 text-sm ${errors.confirmPassword ? 'p-invalid' : ''}`}
-                  />
+                  <IconField iconPosition="left" className="flex items-center">
+                    <InputIcon className="pi pi-lock text-gray-400" style={{ fontSize: '14px' }} />
+                    <InputText
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Repite tu contraseña"
+                      className={`w-full py-2 text-sm pr-10 ${errors.confirmPassword ? 'p-invalid' : ''}`}
+                    />
+                  </IconField>
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 z-20"
                   >
                     <i className={`pi ${showConfirmPassword ? 'pi-eye-slash' : 'pi-eye'}`} style={{ fontSize: '12px' }} />
                   </button>
