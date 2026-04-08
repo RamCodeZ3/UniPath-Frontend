@@ -2,6 +2,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { Checkbox } from 'primereact/checkbox';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
 import type { UniversityFilters as FilterType, UniversityModality } from '../../../shared/models/universityModel';
 import {
   UNIVERSITY_TYPE_OPTIONS,
@@ -83,15 +85,17 @@ export const UniversityFilters = ({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Buscar
         </label>
-        <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <IconField iconPosition="left">
+          <InputIcon className="flex items-center">
+            <SearchIcon className="w-4 h-4 text-gray-400" />
+          </InputIcon>
           <InputText
             value={filters.search || ''}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Nombre o siglas..."
-            className="w-full pl-10 p-2.5 text-sm"
+            className="w-full p-2.5 text-sm"
           />
-        </div>
+        </IconField>
       </div>
 
       {/* Tipo de universidad */}
