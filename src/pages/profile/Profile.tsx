@@ -1,7 +1,14 @@
-import { useSelector } from 'react-redux';
+import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { Calendar } from 'primereact/calendar';
+import { Dropdown } from 'primereact/dropdown';
 import type { RootState } from '../../store/store';
 import { signOut } from '../../shared/services/authService';
+import { updateProfile } from '../../shared/services/profileService';
+import { setProfile } from '../../store/auth/authSlice';
 
 const UserIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -32,8 +39,8 @@ const MailIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const InfoItem = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string | null | undefined }) => (
-  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-sm">
+const InfoItem = ({ icon, label, value, onEdit }: { icon: React.ReactNode, label: string, value: string | null | undefined, onEdit?: () => void }) => (
+  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-sm group">
     <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">
       {icon}
     </div>
@@ -41,12 +48,25 @@ const InfoItem = ({ icon, label, value }: { icon: React.ReactNode, label: string
       <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</p>
       <p className="text-base font-semibold text-gray-900 truncate">{value || 'No especificado'}</p>
     </div>
+    {onEdit && (
+      <button 
+        onClick={onEdit}
+        className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-blue-600 transition-all"
+      >
+        <i className="pi pi-pencil text-sm" />
+      </button>
+    )}
   </div>
 );
 
 export default function Profile() {
+  const dispatch = useDispatch();
   const { profile, user } = useSelector((state: RootState) => state.auth);
   const userName = profile?.name || user?.user_metadata?.name || user?.user_metadata?.full_name || 'Usuario';
+
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingField, setEditingField] = useState<{ key: string, label: string, value: any } | null>(null);
 
   const handleLogout = async () => {
     try {
@@ -72,7 +92,8 @@ export default function Profile() {
   const formatBirthdate = (dateStr: string | null | undefined) => {
     if (!dateStr) return 'No especificada';
     try {
-      const date = new Date(dateStr);
+      const [year, month, day] = dateStr.split('-');
+      const date = new Date(Number(year), Number(month) - 1, Number(day));
       return date.toLocaleDateString('es-ES', { 
         day: 'numeric', 
         month: 'long', 
@@ -88,6 +109,35 @@ export default function Profile() {
     femenino: 'Femenino',
     otro: 'Otro',
     prefiero_no_decir: 'Prefiero no decirlo'
+  };
+
+  const sexOptions = [
+    { label: 'Masculino', value: 'masculino' },
+    { label: 'Femenino', value: 'femenino' },
+    { label: 'Otro', value: 'otro' },
+    { label: 'Prefiero no decir', value: 'prefiero_no_decir' },
+  ];
+
+  const handleEditClick = (key: string, label: string, value: any) => {
+    setEditingField({ key, label, value: value || '' });
+    setIsEditModalVisible(true);
+  };
+
+  const handleSave = async () => {
+    if (!user?.id || !editingField) return;
+    
+    try {
+      setIsSubmitting(true);
+      const updates = { [editingField.key]: editingField.value };
+      const updatedProfile = await updateProfile(user.id, updates);
+      dispatch(setProfile(updatedProfile));
+      setIsEditModalVisible(false);
+      setEditingField(null);
+    } catch (error) {
+      console.error('Error al actualizar el perfil:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -117,15 +167,27 @@ export default function Profile() {
               </div>
 
               <div className="flex-1 text-center md:text-left space-y-2">
-                <h2 className="text-3xl font-bold text-gray-900">{userName}</h2>
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <h2 className="text-3xl font-bold text-gray-900">{userName}</h2>
+                  <Button 
+                    icon="pi pi-pencil" 
+                    text 
+                    rounded 
+                    className="w-8 h-8 md:ml-2"
+                    onClick={() => handleEditClick('name', 'Nombre Completo', profile?.name)}
+                  />
+                </div>
                 <div className="flex flex-wrap justify-center md:justify-start gap-2">
                   <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full">
                     Estudiante
                   </span>
                   {profile?.genre && (
-                    <span className="px-3 py-1 bg-gray-50 text-gray-600 text-sm font-medium rounded-full">
+                    <button 
+                      onClick={() => handleEditClick('genre', 'Género', profile?.genre)}
+                      className="px-3 py-1 bg-gray-50 text-gray-600 text-sm font-medium rounded-full hover:bg-gray-100 transition-colors"
+                    >
                       {genreLabels[profile.genre] || profile.genre}
-                    </span>
+                    </button>
                   )}
                 </div>
               </div>
@@ -143,11 +205,13 @@ export default function Profile() {
               icon={<PhoneIcon className="w-6 h-6" />}
               label="Teléfono"
               value={profile?.number}
+              onEdit={() => handleEditClick('number', 'Teléfono', profile?.number)}
             />
             <InfoItem 
               icon={<CalendarIcon className="w-6 h-6" />}
               label="Fecha de nacimiento"
               value={formatBirthdate(profile?.birthdate)}
+              onEdit={() => handleEditClick('birthdate', 'Fecha de Nacimiento', profile?.birthdate)}
             />
             <InfoItem 
               icon={<UserIcon className="w-6 h-6" />}
@@ -168,6 +232,86 @@ export default function Profile() {
           </div>
         </div>
       </main>
+
+      {/* Edit Profile Modal */}
+      <Dialog 
+        header={`Editar ${editingField?.label || ''}`} 
+        visible={isEditModalVisible} 
+        style={{ width: '90vw', maxWidth: '400px' }} 
+        onHide={() => {
+          setIsEditModalVisible(false);
+          setEditingField(null);
+        }}
+        footer={
+          <div className="flex gap-2 justify-end">
+            <Button label="Cancelar" icon="pi pi-times" outlined onClick={() => setIsEditModalVisible(false)} />
+            <Button label="Guardar" icon="pi pi-check" onClick={handleSave} loading={isSubmitting} />
+          </div>
+        }
+      >
+        <div className="py-4">
+          {editingField?.key === 'name' && (
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700">Nombre Completo</label>
+              <InputText 
+                value={editingField.value} 
+                onChange={(e) => setEditingField({...editingField, value: e.target.value})} 
+                className="w-full"
+                autoFocus
+              />
+            </div>
+          )}
+
+          {editingField?.key === 'number' && (
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700">Teléfono</label>
+              <InputText 
+                value={editingField.value} 
+                onChange={(e) => setEditingField({...editingField, value: e.target.value})} 
+                className="w-full"
+                placeholder="+1 809 000-0000"
+                autoFocus
+              />
+            </div>
+          )}
+
+          {editingField?.key === 'birthdate' && (
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700">Fecha de Nacimiento</label>
+              <Calendar 
+                value={editingField.value ? new Date(editingField.value + 'T00:00:00') : null} 
+                onChange={(e) => {
+                  const date = e.value as Date;
+                  if (date) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    setEditingField({...editingField, value: `${year}-${month}-${day}`});
+                  }
+                }} 
+                dateFormat="dd/mm/yy" 
+                showIcon 
+                inline
+                className="w-full"
+              />
+            </div>
+          )}
+
+          {editingField?.key === 'genre' && (
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700">Género</label>
+              <Dropdown 
+                value={editingField.value} 
+                options={sexOptions} 
+                onChange={(e) => setEditingField({...editingField, value: e.value})} 
+                className="w-full"
+                placeholder="Selecciona una opción"
+                autoFocus
+              />
+            </div>
+          )}
+        </div>
+      </Dialog>
     </div>
   );
 }

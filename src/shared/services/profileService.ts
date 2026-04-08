@@ -51,6 +51,7 @@ export const updateProfile = async (userId: string, updates: object) => {
     .from('profiles')
     .update(updates)
     .eq('user_id', userId)
+    .select()
     .single();
 
   if (error) throw new Error(error.message);
