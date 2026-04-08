@@ -161,11 +161,11 @@ export default function ApplicationDocuments() {
         throw new Error('Requerimiento no encontrado');
       }
 
-      // Crear objeto de documento nuevo con la nueva estructura
+       // Crear objeto de documento nuevo con la nueva estructura
       const newDoc: NewDocumentToSave = {
         profile_id: profile.id,
         document_path: `${profile.id}/${file.name}`,
-        enrollment_requirement_id: requirement.enrollmentReqId, // ID del requerimiento de inscripción
+        enrollment_requirement_id: requirement.enrollmentReqId, // Ya está normalizado (lowercase y trimmed)
         file: file,
       };
 

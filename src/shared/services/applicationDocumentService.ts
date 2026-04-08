@@ -88,7 +88,7 @@ export async function getUniversityRequirements(
       const enrollmentReq = erData?.find((er: any) => er.id === ur.requirement_id);
       const mapped = {
         requirementId: ur.id,
-        enrollmentReqId: (ur.requirement_id || '').toString().trim(), // Ensure trimmed string
+        enrollmentReqId: (ur.requirement_id || '').toString().trim().toLowerCase(), // Normalize: trim and lowercase
         description: enrollmentReq?.description || 'Desconocido',
         notes: ur.notes,
       };
@@ -137,25 +137,23 @@ export async function getUserDocuments(profileId: string): Promise<UserDocument[
 
     if (data && data.length > 0) {
       data.forEach((doc: UserDocument, index: number) => {
-        // Trim enrollment_requirement_id to ensure consistent comparison
-        const trimmedDoc = {
-          ...doc,
-          enrollment_requirement_id: (doc.enrollment_requirement_id || '').toString().trim(),
-        };
+        // Normalize enrollment_requirement_id: trim, lowercase
+        const normalizedId = (doc.enrollment_requirement_id || '').toString().trim().toLowerCase();
         console.log(`[getUserDocuments] Document ${index}:`, {
-          id: trimmedDoc.id,
-          profile_id: trimmedDoc.profile_id,
-          document_path: trimmedDoc.document_path,
-          enrollment_requirement_id: trimmedDoc.enrollment_requirement_id,
-          type: typeof trimmedDoc.enrollment_requirement_id,
+          id: doc.id,
+          profile_id: doc.profile_id,
+          document_path: doc.document_path,
+          enrollment_requirement_id: doc.enrollment_requirement_id,
+          normalizedId: normalizedId,
+          type: typeof doc.enrollment_requirement_id,
         });
       });
     }
 
-    // Return with trimmed IDs
+    // Return with normalized IDs (trim and lowercase)
     return (data || []).map((doc) => ({
       ...doc,
-      enrollment_requirement_id: (doc.enrollment_requirement_id || '').toString().trim(),
+      enrollment_requirement_id: (doc.enrollment_requirement_id || '').toString().trim().toLowerCase(),
     }));
   } catch (error) {
     console.error('[getUserDocuments] Catch error:', error);
@@ -167,6 +165,7 @@ export async function getUserDocuments(profileId: string): Promise<UserDocument[
 /**
  * Hacer matching entre requerimientos y documentos existentes
  * Ahora el matching es directo por enrollment_requirement_id
+ * Comparación case-insensitive y con trim para máxima robustez
  */
 export function matchRequirementsWithDocuments(
   requirements: UniversityRequirement[],
@@ -176,18 +175,30 @@ export function matchRequirementsWithDocuments(
   console.log('[matchRequirementsWithDocuments] Requirements count:', requirements.length);
   console.log('[matchRequirementsWithDocuments] Documents count:', documents.length);
 
+  // Normalizar todos los IDs de documentos para búsqueda rápida
+  const normalizedDocMap = new Map<string, UserDocument>();
+  documents.forEach((doc) => {
+    const normalizedId = (doc.enrollment_requirement_id || '').toString().trim().toLowerCase();
+    normalizedDocMap.set(normalizedId, doc);
+    console.log('[matchRequirementsWithDocuments] Added to map:', {
+      normalizedId,
+      originalId: doc.enrollment_requirement_id,
+    });
+  });
+
   return requirements.map((req) => {
-    // Buscar si existe un documento con el mismo enrollment_requirement_id
-    const existingDoc = documents.find((doc) => {
-      const match = doc.enrollment_requirement_id === req.enrollmentReqId;
-      console.log('[matchRequirementsWithDocuments] Comparing:', {
-        docEnrollmentReqId: doc.enrollment_requirement_id,
-        docEnrollmentReqIdType: typeof doc.enrollment_requirement_id,
-        reqEnrollmentReqId: req.enrollmentReqId,
-        reqEnrollmentReqIdType: typeof req.enrollmentReqId,
-        match: match,
-      });
-      return match;
+    // Normalizar el ID del requerimiento de la misma manera
+    const normalizedReqId = (req.enrollmentReqId || '').toString().trim().toLowerCase();
+    
+    // Buscar en el mapa normalizado
+    const existingDoc = normalizedDocMap.get(normalizedReqId);
+
+    console.log('[matchRequirementsWithDocuments] Comparing requirement:', {
+      normalizedReqId,
+      originalReqId: req.enrollmentReqId,
+      found: !!existingDoc,
+      documentId: existingDoc?.id,
+      description: req.description,
     });
 
     const result = {
@@ -195,12 +206,6 @@ export function matchRequirementsWithDocuments(
       hasExistingDocument: !!existingDoc,
       existingDocument: existingDoc,
     };
-
-    console.log('[matchRequirementsWithDocuments] Result for requirement:', {
-      requirementId: req.requirementId,
-      enrollmentReqId: req.enrollmentReqId,
-      hasExistingDocument: result.hasExistingDocument,
-    });
 
     return result;
   });
