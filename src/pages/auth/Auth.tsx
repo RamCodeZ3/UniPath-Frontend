@@ -361,7 +361,7 @@ export default function Auth() {
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 border-none text-white font-semibold py-2 text-sm rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
             />
 
-            <div className="text-center text-xs text-gray-500">
+            <div className="text-center text-xs text-gray-500 pt-2">
               {isLogin ? (
                 <>
                   ¿No tienes cuenta?{' '}
