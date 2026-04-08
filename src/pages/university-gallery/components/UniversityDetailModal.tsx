@@ -84,16 +84,18 @@ export const UniversityDetailModal = ({
   if (!university) return null;
 
   const headerContent = (
-    <div className="flex items-center gap-4">
-      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-8 pb-2 px-6">
+      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 shadow-sm border border-blue-100">
         <BuildingIcon className="w-6 h-6 text-blue-600" />
       </div>
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-bold text-gray-900 leading-tight">
           {university.name}
         </h2>
         {university.acronym && (
-          <span className="text-sm text-gray-500">({university.acronym})</span>
+          <span className="text-sm font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-lg mt-1 inline-block">
+            {university.acronym}
+          </span>
         )}
       </div>
     </div>
@@ -104,17 +106,18 @@ export const UniversityDetailModal = ({
       header={headerContent}
       visible={visible}
       onHide={onHide}
-      style={{ width: '90vw', maxWidth: '600px' }}
+      style={{ width: '95vw', maxWidth: '600px' }}
       modal
       dismissableMask
       className="university-detail-modal"
+      contentClassName="p-0"
     >
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <i className="pi pi-spin pi-spinner text-4xl text-blue-600" />
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="px-6 pb-8 pt-2 space-y-6">
           {/* Badges */}
           <div className="flex flex-wrap gap-2">
             <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
