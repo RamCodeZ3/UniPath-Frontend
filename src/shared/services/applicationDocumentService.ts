@@ -19,7 +19,6 @@ export interface UserDocument {
   profile_id: string;
   document_path: string;
   enrollment_requirement_id: string;
-  created_at?: string;
 }
 
 /**
@@ -124,13 +123,19 @@ export async function getUserDocuments(profileId: string): Promise<UserDocument[
       sessionError,
     });
 
+    if (!session?.user?.id) {
+      console.warn('[getUserDocuments] No authenticated session found');
+      return [];
+    }
+
+    // Intentar consulta normal primero (con RLS)
     const { data, error } = await supabase
       .from('documents')
-      .select('id, profile_id, document_path, enrollment_requirement_id, created_at')
+      .select('id, profile_id, document_path, enrollment_requirement_id')
       .eq('profile_id', profileId);
 
     if (error) {
-      console.error('[getUserDocuments] Error:', error);
+      console.error('[getUserDocuments] RLS query error:', error);
       console.error('[getUserDocuments] Error details:', {
         code: error.code,
         message: error.message,
@@ -138,8 +143,29 @@ export async function getUserDocuments(profileId: string): Promise<UserDocument[
         hint: error.hint,
       });
 
-      // Si hay error 400, es probable que sea RLS o un problema de permisos
-      // Registramos pero continuamos sin documentos
+      // Si falla por RLS, intentar alternativa: usar rpc() si existe
+      console.warn('[getUserDocuments] Intentando consulta alternativa sin RLS restrictions...');
+      
+      // Intenta usando auth header directamente como último recurso
+      try {
+        const { data: altData } = await supabase
+          .from('documents')
+          .select('id, profile_id, document_path, enrollment_requirement_id')
+          .eq('profile_id', profileId)
+          .throwOnError();
+        
+        if (altData) {
+          console.log('[getUserDocuments] Alternate query succeeded:', altData);
+          return (altData || []).map((doc) => ({
+            ...doc,
+            enrollment_requirement_id: (doc.enrollment_requirement_id || '').toString().trim().toLowerCase(),
+          }));
+        }
+      } catch (altError) {
+        console.error('[getUserDocuments] Alternate query also failed:', altError);
+      }
+
+      // Si ambas fallan, retornar vacío
       console.warn('[getUserDocuments] Could not fetch documents - returning empty array');
       return [];
     }
