@@ -1,5 +1,5 @@
 interface DocumentRecommendationCardProps {
-  answer: string;
+  answer?: string | null;
   loading: boolean;
   error?: string | null;
   documentsUsed?: number;
