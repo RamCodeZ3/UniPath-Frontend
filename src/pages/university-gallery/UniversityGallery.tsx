@@ -14,6 +14,7 @@ import type {
   UniversityFilters as FilterType,
   UniversityWithDetails,
 } from '../../shared/models/universityModel';
+import type { SB_UniversityOverviews } from '../../shared/models/universityOverviewsModel';
 
 const LogoIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -171,6 +172,16 @@ export const UniversityGallery = () => {
   const handleCloseModal = useCallback(() => {
     setModalVisible(false);
     setSelectedUniversity(null);
+  }, []);
+
+  const handleReviewAdded = useCallback((newReview: SB_UniversityOverviews) => {
+    setSelectedUniversity(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        overviews: [newReview, ...(prev.overviews || [])]
+      };
+    });
   }, []);
 
   return (
@@ -376,6 +387,7 @@ export const UniversityGallery = () => {
         visible={modalVisible}
         onHide={handleCloseModal}
         loading={modalLoading}
+        onReviewAdded={handleReviewAdded}
       />
     </div>
   );
