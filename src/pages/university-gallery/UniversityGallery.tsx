@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useDeferredValue, useMemo } from 'react';
 import { Button } from 'primereact/button';
+import { Paginator, type PaginatorPageChangeEvent } from 'primereact/paginator';
 import { UniversityCard } from './components/UniversityCard';
 import { UniversityFilters } from './components/UniversityFilters';
 import { UniversityDetailModal } from './components/UniversityDetailModal';
@@ -320,47 +321,14 @@ export const UniversityGallery = () => {
 
                 {/* Controles de paginación */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-8">
-                    <Button
-                      icon="pi pi-chevron-left"
-                      outlined
-                      severity="secondary"
-                      disabled={currentPage === 1}
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      className="w-10 h-10"
-                    />
-                    
-                    {[...Array(Math.min(totalPages, 5))].map((_, i) => {
-                      let pageNum: number;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-                      
-                      return (
-                        <Button
-                          key={pageNum}
-                          label={String(pageNum)}
-                          outlined={currentPage !== pageNum}
-                          severity={currentPage === pageNum ? undefined : 'secondary'}
-                          onClick={() => handlePageChange(pageNum)}
-                          className="w-10 h-10"
-                        />
-                      );
-                    })}
-                    
-                    <Button
-                      icon="pi pi-chevron-right"
-                      outlined
-                      severity="secondary"
-                      disabled={currentPage === totalPages}
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      className="w-10 h-10"
+                  <div className="mt-8 pb-8 border-b border-gray-200 flex justify-center">
+                    <Paginator
+                      first={(currentPage - 1) * ITEMS_PER_PAGE}
+                      rows={ITEMS_PER_PAGE}
+                      totalRecords={totalItems}
+                      onPageChange={(e: PaginatorPageChangeEvent) => handlePageChange(e.page + 1)}
+                      template="PrevPageLink PageLinks NextPageLink"
+                      className="!bg-transparent !border-none"
                     />
                   </div>
                 )}
