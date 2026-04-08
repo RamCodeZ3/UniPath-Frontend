@@ -1,5 +1,4 @@
 import { useNavigate, NavLink } from 'react-router-dom';
-import { Button } from 'primereact/button';
 import { Menu } from 'primereact/menu';
 import { signOut } from '../services/authService';
 import { useSelector } from 'react-redux';
