@@ -9,6 +9,7 @@ import Profile from './pages/profile';
 import { ProfileCreation } from './pages/profile-creation';
 import { UniversityGallery } from './pages/university-gallery';
 import { ApplicationDocuments } from './pages/application-documents';
+import { UniversityLogoAdmin } from './pages/admin/UniversityLogoAdmin';
 import ProtectedRoute from './shared/components/ProtectedRoute';
 import AuthListener from './shared/components/AuthListener';
 import { MainLayout } from './shared/components/MainLayout';
@@ -73,10 +74,14 @@ const routes = [
              path: '/apply/:universityId',
              element: <ApplicationDocuments />,
            },
+           {
+             path: '/admin/logos',
+             element: <UniversityLogoAdmin />,
+           },
          ],
-      },
-    ],
-  },
-];
+       },
+     ],
+   },
+ ];
 
 export default routes;

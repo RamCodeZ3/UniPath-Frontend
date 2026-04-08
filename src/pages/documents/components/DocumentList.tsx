@@ -21,7 +21,6 @@ const DocumentIcon = ({ type, className }: { type: string; className?: string })
     );
   }
 
-  // Icono genérico para imágenes
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
@@ -75,6 +74,14 @@ export const DocumentList = ({
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [selectedDeleteDoc, setSelectedDeleteDoc] = useState<SB_Documents | null>(null);
 
+  const getDisplayName = (doc: SB_Documents): string => {
+    const raw = doc.document_name || doc.document_path.split('/').pop() || 'Documento';
+    return decodeURIComponent(raw)
+      .replace(/^\d+-/, '')
+      .replace(/[_]/g, ' ')
+      .trim();
+  };
+
   const formatDate = (dateString?: string): string => {
     if (!dateString) return '-';
     try {
@@ -103,7 +110,7 @@ export const DocumentList = ({
   };
 
   const handleDownload = (doc: SB_Documents) => {
-    const fileName = doc.document_name || doc.document_path.split('/').pop() || 'documento';
+    const fileName = getDisplayName(doc);
     onDownload(doc.document_path, fileName);
   };
 
@@ -147,7 +154,6 @@ export const DocumentList = ({
             className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between gap-4">
-              {/* Información del documento */}
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -162,7 +168,7 @@ export const DocumentList = ({
 
                 <div className="flex-1 min-w-0">
                   <p className="text-gray-900 font-medium truncate hover:text-blue-600 cursor-pointer">
-                    {doc.document_name || doc.document_path.split('/').pop() || 'Documento'}
+                    {getDisplayName(doc)}
                   </p>
                   <div className="flex items-center gap-3 text-sm text-gray-500">
                     <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium text-gray-700">
@@ -173,7 +179,6 @@ export const DocumentList = ({
                 </div>
               </div>
 
-              {/* Acciones */}
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button
                   onClick={() => handleDownload(doc)}
@@ -198,7 +203,6 @@ export const DocumentList = ({
         ))}
       </div>
 
-      {/* Modal de confirmación de eliminación */}
       <Dialog
         visible={deleteConfirm !== null}
         onHide={() => setDeleteConfirm(null)}
@@ -218,7 +222,9 @@ export const DocumentList = ({
               disabled={isDeleting}
               className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {isDeleting && <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+              {isDeleting && (
+                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
               {isDeleting ? 'Eliminando...' : 'Eliminar'}
             </button>
           </div>
@@ -226,7 +232,10 @@ export const DocumentList = ({
       >
         <p className="text-gray-700">
           ¿Estás seguro de que deseas eliminar{' '}
-          <span className="font-medium">{selectedDeleteDoc?.document_name}</span>? Esta acción no se puede deshacer.
+          <span className="font-medium">
+            {selectedDeleteDoc ? getDisplayName(selectedDeleteDoc) : ''}
+          </span>
+          ? Esta acción no se puede deshacer.
         </p>
       </Dialog>
     </div>

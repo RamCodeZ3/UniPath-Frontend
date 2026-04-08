@@ -55,6 +55,21 @@ export const Navbar = () => {
       }
     },
     {
+      label: 'Gestión de Logos',
+      icon: 'pi pi-image',
+      template: (item, options) => {
+          return (
+              <button 
+                  onClick={(e) => { navigate('/admin/logos'); options.onClick(e); }} 
+                  className="w-full flex items-center p-3 text-gray-700 hover:bg-gray-50 transition-colors border-none bg-transparent cursor-pointer"
+              >
+                  <span className={item.icon + ' mr-3 text-blue-600'}></span>
+                  <span className="font-medium text-sm">{item.label}</span>
+              </button>
+          );
+      }
+    },
+    {
       separator: true
     },
     {
