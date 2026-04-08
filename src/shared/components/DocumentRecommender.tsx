@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { recommendDocuments } from "../services/documentRecommender";
+import { recommendDocuments } from "../services/geminiService";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Message } from "primereact/message";
 

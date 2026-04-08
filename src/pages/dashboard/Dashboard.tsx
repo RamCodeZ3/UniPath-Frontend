@@ -1,14 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { Button } from 'primereact/button';
-import { signOut } from '../../shared/services/authService';
-
-const LogoIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-    <path d="M2 17l10 5 10-5" />
-    <path d="M2 12l10 5 10-5" />
-  </svg>
-);
 
 const BuildingIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

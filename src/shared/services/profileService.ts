@@ -1,6 +1,7 @@
 import supabase from '../../config/supabase/supabase';
 
 export interface Profile {
+  id: string;
   user_id: string;
   name: string | null;
   birthdate: string | null;

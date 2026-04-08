@@ -6,7 +6,6 @@ import type { UniversityFilters as FilterType, UniversityModality } from '../../
 import {
   UNIVERSITY_TYPE_OPTIONS,
   UNIVERSITY_MODALITY_OPTIONS,
-  UNIVERSITY_STATUS_OPTIONS,
 } from '../../../shared/models/universityModel';
 
 interface UniversityFiltersProps {
@@ -45,10 +44,6 @@ export const UniversityFilters = ({
       ? [...currentModalities, modality]
       : currentModalities.filter((m) => m !== modality);
     onFilterChange({ ...filters, modality: newModalities });
-  };
-
-  const handleStatusChange = (value: string) => {
-    onFilterChange({ ...filters, status: value as FilterType['status'] });
   };
 
   const handleSearchChange = (value: string) => {

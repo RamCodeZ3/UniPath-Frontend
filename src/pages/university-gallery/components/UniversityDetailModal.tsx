@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
+import { useSelector } from 'react-redux';
 import type { UniversityWithDetails } from '../../../shared/models/universityModel';
 import type { SB_UniversityOverviews } from '../../../shared/models/universityOverviewsModel';
 import { createUniversityOverview } from '../../../shared/services/universityOverviewsService';
 import type { RootState } from '../../../store/store';
+import { ApplyButton } from './ApplyButton';
 
 interface UniversityDetailModalProps {
   university: UniversityWithDetails | null;
@@ -91,6 +93,7 @@ export const UniversityDetailModal = ({
   const { profile } = useSelector((state: RootState) => state.auth);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const profileId = profile?.id;
 
   if (!university) return null;
 
@@ -326,9 +329,21 @@ export const UniversityDetailModal = ({
             </div>
           </div>
 
+          {/* Botón Aplicar */}
+          {profileId && (
+            <div className="pt-4 border-t border-gray-100">
+              <ApplyButton
+                universityId={university.id}
+                universityName={university.name}
+                profileId={profileId}
+                variant="primary"
+              />
+            </div>
+          )}
+
           {/* Botón de visitar sitio web */}
           {university.website && (
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-2">
               <Button
                 label="Visitar sitio web"
                 icon="pi pi-external-link"
