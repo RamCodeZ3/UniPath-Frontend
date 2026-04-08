@@ -103,7 +103,8 @@ export const DocumentList = ({
   };
 
   const handleDownload = (doc: SB_Documents) => {
-    onDownload(doc.document_path, doc.document_name);
+    const fileName = doc.document_name || doc.document_path.split('/').pop() || 'documento';
+    onDownload(doc.document_path, fileName);
   };
 
   if (error) {
@@ -151,7 +152,7 @@ export const DocumentList = ({
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                     <DocumentIcon
-                      type={doc.type}
+                      type={doc.type || 'image'}
                       className={`w-6 h-6 ${
                         doc.type === 'PDF' ? 'text-red-600' : 'text-blue-600'
                       }`}
@@ -161,11 +162,11 @@ export const DocumentList = ({
 
                 <div className="flex-1 min-w-0">
                   <p className="text-gray-900 font-medium truncate hover:text-blue-600 cursor-pointer">
-                    {doc.document_name}
+                    {doc.document_name || doc.document_path.split('/').pop() || 'Documento'}
                   </p>
                   <div className="flex items-center gap-3 text-sm text-gray-500">
                     <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium text-gray-700">
-                      {getFileTypeLabel(doc.document_name)}
+                      {getFileTypeLabel(doc.document_name || doc.document_path)}
                     </span>
                     <span>{formatDate()}</span>
                   </div>

@@ -8,6 +8,7 @@ import Documents from './pages/documents/Documents';
 import Profile from './pages/profile';
 import { ProfileCreation } from './pages/profile-creation';
 import { UniversityGallery } from './pages/university-gallery';
+import { ApplicationDocuments } from './pages/application-documents';
 import ProtectedRoute from './shared/components/ProtectedRoute';
 import AuthListener from './shared/components/AuthListener';
 import { MainLayout } from './shared/components/MainLayout';
@@ -64,11 +65,15 @@ const routes = [
             path: '/documents',
             element: <Documents />,
           },
-          {
-            path: '/profile',
-            element: <Profile />,
-          },
-        ],
+           {
+             path: '/profile',
+             element: <Profile />,
+           },
+           {
+             path: '/apply/:universityId',
+             element: <ApplicationDocuments />,
+           },
+         ],
       },
     ],
   },

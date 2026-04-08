@@ -50,6 +50,7 @@ export function validateFile(file: File): FileValidation {
  * @returns Extensión del archivo (ej: '.pdf')
  */
 export function getFileExtension(fileName: string): string {
+  if (!fileName) return '';
   const lastDot = fileName.lastIndexOf('.');
   if (lastDot === -1) return '';
   return fileName.substring(lastDot).toLowerCase();
@@ -71,12 +72,15 @@ export function getFileMimeType(file: File): string {
  * @returns Nombre único
  */
 export function generateUniqueFileName(fileName: string, existingNames: string[]): string {
+  if (!fileName) return '';
+  
   if (!existingNames.includes(fileName)) {
     return fileName;
   }
 
   const extension = getFileExtension(fileName);
-  const nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
+  const lastDotIndex = fileName.lastIndexOf('.');
+  const nameWithoutExtension = lastDotIndex !== -1 ? fileName.substring(0, lastDotIndex) : fileName;
 
   let counter = 1;
   let newName = `${nameWithoutExtension} (${counter})${extension}`;
