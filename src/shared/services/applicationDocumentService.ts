@@ -84,15 +84,24 @@ export async function getUniversityRequirements(
     console.log('[getUniversityRequirements] Enrollment requirements:', erData);
 
     // Mapear y combinar
-    return urData.map((ur: any) => {
+    const result = urData.map((ur: any) => {
       const enrollmentReq = erData?.find((er: any) => er.id === ur.requirement_id);
-      return {
+      const mapped = {
         requirementId: ur.id,
-        enrollmentReqId: ur.requirement_id,
+        enrollmentReqId: (ur.requirement_id || '').toString().trim(), // Ensure trimmed string
         description: enrollmentReq?.description || 'Desconocido',
         notes: ur.notes,
       };
+      console.log('[getUniversityRequirements] Mapped requirement:', {
+        requirementId: mapped.requirementId,
+        enrollmentReqId: mapped.enrollmentReqId,
+        type: typeof mapped.enrollmentReqId,
+        description: mapped.description,
+      });
+      return mapped;
     });
+    console.log('[getUniversityRequirements] Final result:', result);
+    return result;
   } catch (error) {
     console.error('[getUniversityRequirements] Error:', error);
     throw error;
@@ -126,7 +135,28 @@ export async function getUserDocuments(profileId: string): Promise<UserDocument[
 
     console.log('[getUserDocuments] Data:', data);
 
-    return data || [];
+    if (data && data.length > 0) {
+      data.forEach((doc: UserDocument, index: number) => {
+        // Trim enrollment_requirement_id to ensure consistent comparison
+        const trimmedDoc = {
+          ...doc,
+          enrollment_requirement_id: (doc.enrollment_requirement_id || '').toString().trim(),
+        };
+        console.log(`[getUserDocuments] Document ${index}:`, {
+          id: trimmedDoc.id,
+          profile_id: trimmedDoc.profile_id,
+          document_path: trimmedDoc.document_path,
+          enrollment_requirement_id: trimmedDoc.enrollment_requirement_id,
+          type: typeof trimmedDoc.enrollment_requirement_id,
+        });
+      });
+    }
+
+    // Return with trimmed IDs
+    return (data || []).map((doc) => ({
+      ...doc,
+      enrollment_requirement_id: (doc.enrollment_requirement_id || '').toString().trim(),
+    }));
   } catch (error) {
     console.error('[getUserDocuments] Catch error:', error);
     // Retornar vacío en caso de error para permitir continuar
@@ -142,17 +172,37 @@ export function matchRequirementsWithDocuments(
   requirements: UniversityRequirement[],
   documents: UserDocument[]
 ): RequirementStatus[] {
+  console.log('[matchRequirementsWithDocuments] Starting match...');
+  console.log('[matchRequirementsWithDocuments] Requirements count:', requirements.length);
+  console.log('[matchRequirementsWithDocuments] Documents count:', documents.length);
+
   return requirements.map((req) => {
     // Buscar si existe un documento con el mismo enrollment_requirement_id
-    const existingDoc = documents.find(
-      (doc) => doc.enrollment_requirement_id === req.enrollmentReqId
-    );
+    const existingDoc = documents.find((doc) => {
+      const match = doc.enrollment_requirement_id === req.enrollmentReqId;
+      console.log('[matchRequirementsWithDocuments] Comparing:', {
+        docEnrollmentReqId: doc.enrollment_requirement_id,
+        docEnrollmentReqIdType: typeof doc.enrollment_requirement_id,
+        reqEnrollmentReqId: req.enrollmentReqId,
+        reqEnrollmentReqIdType: typeof req.enrollmentReqId,
+        match: match,
+      });
+      return match;
+    });
 
-    return {
+    const result = {
       ...req,
       hasExistingDocument: !!existingDoc,
       existingDocument: existingDoc,
     };
+
+    console.log('[matchRequirementsWithDocuments] Result for requirement:', {
+      requirementId: req.requirementId,
+      enrollmentReqId: req.enrollmentReqId,
+      hasExistingDocument: result.hasExistingDocument,
+    });
+
+    return result;
   });
 }
 
