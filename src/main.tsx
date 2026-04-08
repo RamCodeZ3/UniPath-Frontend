@@ -5,10 +5,10 @@ import { Provider } from 'react-redux';
 import { PrimeReactProvider } from 'primereact/api';
 import { store } from './store/store';
 import routes from './routes';
+import './index.css';
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-import './index.css';
 
 const router = createBrowserRouter(routes);
 
