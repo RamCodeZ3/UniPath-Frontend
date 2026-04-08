@@ -7,10 +7,9 @@ import {
   getUniversityRequirements,
   getUserDocuments,
   matchRequirementsWithDocuments,
-  confirmApplicationWithDocuments,
   type RequirementStatus,
-  type NewDocumentToSave,
 } from '../../shared/services/applicationDocumentService';
+import supabase from '../../config/supabase/supabase';
 import { UniversityHeader } from './components/UniversityHeader';
 import { RequirementsList } from './components/RequirementsList';
 import { PaymentSummary } from './components/PaymentSummary';
@@ -21,7 +20,6 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 interface ApplicationDocumentsState {
   requirements: RequirementStatus[];
-  newDocumentsToSave: NewDocumentToSave[];
   isLoading: boolean;
   isConfirming: boolean;
   error: string | null;
@@ -39,7 +37,6 @@ export default function ApplicationDocuments() {
   // Local state
   const [state, setState] = useState<ApplicationDocumentsState>({
     requirements: [],
-    newDocumentsToSave: [],
     isLoading: true,
     isConfirming: false,
     error: null,
@@ -161,21 +158,33 @@ export default function ApplicationDocuments() {
         throw new Error('Requerimiento no encontrado');
       }
 
-       // Crear objeto de documento nuevo con la nueva estructura
-      const newDoc: NewDocumentToSave = {
-        profile_id: profile.id,
-        document_path: `${profile.id}/${file.name}`,
-        enrollment_requirement_id: requirement.enrollmentReqId, // Ya está normalizado (lowercase y trimmed)
-        file: file,
-      };
+      // 1. SUBIR ARCHIVO A STORAGE INMEDIATAMENTE
+      const filePath = `${profile.id}/${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('documents_users')
+        .upload(filePath, file, { upsert: false });
 
-      // Agregar a lista de documentos a guardar
-      setState((prev) => ({
-        ...prev,
-        newDocumentsToSave: [...prev.newDocumentsToSave, newDoc],
-      }));
+      if (uploadError) {
+        throw uploadError;
+      }
 
-      // Actualizar estado del requerimiento
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const publicUrl = `${supabaseUrl}/storage/v1/object/public/documents_users/${filePath}`;
+
+      // 2. GUARDAR EN TABLA DOCUMENTS INMEDIATAMENTE
+      const { error: saveError } = await supabase
+        .from('documents')
+        .insert({
+          profile_id: profile.id,
+          document_path: publicUrl,
+          enrollment_requirement_id: requirement.enrollmentReqId,
+        });
+
+      if (saveError) {
+        throw saveError;
+      }
+
+      // 3. ACTUALIZAR UI: marcar como completado
       setState((prev) => ({
         ...prev,
         requirements: prev.requirements.map((req) =>
@@ -184,9 +193,9 @@ export default function ApplicationDocuments() {
                 ...req,
                 hasExistingDocument: true,
                 existingDocument: {
-                  id: 'temp-' + Date.now(),
+                  id: 'new-' + Date.now(),
                   profile_id: profile.id,
-                  document_path: newDoc.document_path,
+                  document_path: publicUrl,
                   enrollment_requirement_id: requirement.enrollmentReqId,
                 },
               }
@@ -198,8 +207,8 @@ export default function ApplicationDocuments() {
       if (toastRef_current) {
         toastRef_current.show({
           severity: 'success',
-          summary: 'Archivo seleccionado',
-          detail: `${file.name} será guardado al confirmar`,
+          summary: 'Archivo guardado',
+          detail: `${file.name} ha sido guardado exitosamente`,
           life: 3000,
         });
       }
@@ -209,7 +218,7 @@ export default function ApplicationDocuments() {
         toastRef_current.show({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo procesar el archivo',
+          detail: error instanceof Error ? error.message : 'No se pudo guardar el archivo',
           life: 3000,
         });
       }
@@ -227,12 +236,19 @@ export default function ApplicationDocuments() {
     try {
       setState((prev) => ({ ...prev, isConfirming: true }));
 
-      // Confirmar aplicación con documentos
-      await confirmApplicationWithDocuments(
-        profile.id,
-        universityId,
-        state.newDocumentsToSave
-      );
+      // Solo crear el registro de aplicación
+      // Los documentos ya fueron guardados cuando se subieron
+      const { error } = await supabase
+        .from('applications_for_admission')
+        .insert({
+          profile_id: profile.id,
+          university_id: universityId,
+          status: 'pending',
+        });
+
+      if (error) {
+        throw error;
+      }
 
       const toastRef_current = toastRef.current as any;
       if (toastRef_current) {
@@ -270,11 +286,8 @@ export default function ApplicationDocuments() {
 
   // Manejar ir atrás con validación
   const handleBackWithWarning = () => {
-    if (state.newDocumentsToSave.length > 0) {
-      setShowDiscardModal(true);
-    } else {
-      navigate('/universities');
-    }
+    // Ya no hay cambios sin guardar porque todo se guarda inmediatamente
+    navigate('/universities');
   };
 
   // Descartar cambios y ir atrás
@@ -287,7 +300,7 @@ export default function ApplicationDocuments() {
   const completedCount = state.requirements.filter((r) => r.hasExistingDocument).length;
   const totalCount = state.requirements.length;
   const canConfirm = completedCount === totalCount && totalCount > 0;
-  const hasUnsavedChanges = state.newDocumentsToSave.length > 0;
+  const hasUnsavedChanges = false; // Ya no hay cambios sin guardar
 
   if (state.isLoading) {
     return (
