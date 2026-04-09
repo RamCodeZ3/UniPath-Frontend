@@ -272,11 +272,7 @@ export default function Documents() {
 
   const handleDownloadDocument = (filePath: string, fileName: string) => {
     try {
-      // Construir la URL pública de Supabase
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const publicUrl = `${supabaseUrl}/storage/v1/object/public/documents_users/${filePath}`;
-      
-      downloadFile(publicUrl, fileName);
+      downloadFile(filePath, fileName);
       
       const toastRef_current = toastRef.current as any;
       if (toastRef_current) {

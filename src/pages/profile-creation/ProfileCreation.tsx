@@ -7,7 +7,7 @@ import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
 import { profileSchema, type ProfileFormData } from './profile.schema';
-import { createProfile } from '../../shared/services/profileService';
+import { createProfile, getProfile } from '../../shared/services/profileService';
 import { getSession } from '../../shared/services/authService';
 import { setUser, setEmailConfirmed } from '../../store/auth/authSlice';
 import type { RootState } from '../../store/store';
@@ -176,10 +176,18 @@ export const ProfileCreation = () => {
       try {
         const session = await getSession();
         if (session?.user) {
-          console.log('[ProfileCreation] Sesión obtenida:', session.user.email);
-          setLocalUser(session.user);
-          dispatch(setUser(session.user));
-          dispatch(setEmailConfirmed(!!session.user.email_confirmed_at));
+          const user = session.user;
+          console.log('[ProfileCreation] Sesión obtenida:', user.email);
+          setLocalUser(user);
+          dispatch(setUser(user));
+          dispatch(setEmailConfirmed(!!user.email_confirmed_at));
+
+          const profile = await getProfile(user.id);
+          if (profile) {
+            console.log('[ProfileCreation] Perfil ya existe, redirigiendo a /dashboard');
+            navigate('/dashboard', { replace: true });
+            return;
+          }
         } else {
           console.log('[ProfileCreation] No hay sesión, redirigiendo a /');
           window.location.href = '/';
@@ -193,7 +201,7 @@ export const ProfileCreation = () => {
     };
 
     initSession();
-  }, [dispatch]);
+  }, [dispatch, navigate]);
 
   useEffect(() => {
     if (initialStep > 0 && !isLoading) {

@@ -1,9 +1,72 @@
+import { Chip } from 'primereact/chip';
+
 interface DocumentRecommendationCardProps {
   answer?: string | null;
   loading: boolean;
   error?: string | null;
   documentsUsed?: number;
 }
+
+type SectionType = 'list' | 'chips' | 'text';
+
+interface Section {
+  type: SectionType;
+  title?: string;
+  items?: string[];
+  text?: string;
+}
+
+const parseAnswer = (raw: string): Section[] => {
+  const sections: Section[] = [];
+  const lines = raw.split('\n');
+
+  let current: Section | null = null;
+  let textBuffer: string[] = [];
+
+  const flush = () => {
+    if (!current) return;
+    if (textBuffer.length > 0) {
+      current.text = textBuffer.join(' ').trim();
+      textBuffer = [];
+    }
+    sections.push(current);
+    current = null;
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+      flush();
+      const title = trimmed.replace(/\*\*/g, '');
+      const isMissing = title.toLowerCase().includes('faltante');
+      const isText =
+        title.toLowerCase().includes('recomendaci') ||
+        title.toLowerCase().includes('nota');
+
+      current = {
+        type: isMissing ? 'chips' : isText ? 'text' : 'list',
+        title,
+        items: [],
+      };
+      continue;
+    }
+
+    if (trimmed.startsWith('-') && current) {
+      const item = trimmed.replace(/^-\s*/, '').replace(/\*\*/g, '');
+      current.items = [...(current.items ?? []), item];
+      continue;
+    }
+
+    if (trimmed && current) {
+      textBuffer.push(trimmed);
+    }
+  }
+
+  flush();
+  return sections;
+};
 
 export const DocumentRecommendationCard = ({
   answer,
@@ -15,7 +78,7 @@ export const DocumentRecommendationCard = ({
     return (
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
         <div className="flex items-center gap-3">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
           <p className="text-gray-600">Analizando tus documentos...</p>
         </div>
       </div>
@@ -27,36 +90,13 @@ export const DocumentRecommendationCard = ({
     return null;
   }
 
-  if (!answer) {
-    return null;
-  }
+  if (!answer) return null;
 
-  const formatAnswer = (text: string) => {
-    return text.split('\n').map((line, index) => {
-      if (line.startsWith('**') && line.endsWith('**')) {
-        return (
-          <h4 key={index} className="font-bold text-gray-900 mt-3 mb-1">
-            {line.replace(/\*\*/g, '')}
-          </h4>
-        );
-      }
-
-      const boldRegex = /\*\*(.*?)\*\*/g;
-      const parts = line.split(boldRegex);
-
-      return (
-        <p key={index} className="text-gray-700 mb-1">
-          {parts.map((part, i) =>
-            i % 2 === 1 ? <strong key={i}>{part}</strong> : part
-          )}
-        </p>
-      );
-    });
-  };
+  const sections = parseAnswer(answer);
 
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
             <svg
@@ -82,7 +122,40 @@ export const DocumentRecommendationCard = ({
           </span>
         )}
       </div>
-      <div className="text-sm">{formatAnswer(answer)}</div>
+
+      <div className="text-sm space-y-4">
+        {sections.map((section, i) => (
+          <div key={i}>
+            {section.title && (
+              <h4 className="font-bold text-gray-900 mb-2">{section.title}</h4>
+            )}
+
+            {section.type === 'chips' && (section.items?.length ?? 0) > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {section.items!.map((item, j) => (
+                  <Chip
+                    key={j}
+                    label={item}
+                    className="bg-amber-100 text-amber-800 border-amber-200"
+                  />
+                ))}
+              </div>
+            )}
+
+            {section.type === 'list' && (section.items?.length ?? 0) > 0 && (
+              <ul className="list-disc list-inside space-y-1 text-gray-700">
+                {section.items!.map((item, j) => (
+                  <li key={j}>{item}</li>
+                ))}
+              </ul>
+            )}
+
+            {section.type === 'text' && section.text && (
+              <p className="text-gray-700 leading-relaxed">{section.text}</p>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
