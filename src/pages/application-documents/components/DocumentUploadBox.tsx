@@ -37,7 +37,7 @@ export const DocumentUploadBox = ({
     <div
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all ${
+      className={`border-2 border-dashed rounded-lg p-4 sm:p-6 text-center cursor-pointer transition-all ${
         isLoading
           ? 'border-blue-400 bg-blue-50 opacity-60'
           : 'border-blue-400 bg-blue-50 hover:border-blue-600 hover:bg-blue-100'

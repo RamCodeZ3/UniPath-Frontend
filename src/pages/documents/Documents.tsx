@@ -301,23 +301,23 @@ export default function Documents() {
       <Toast ref={toastRef} />
       
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mis Documentos</h1>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Mis Documentos</h1>
           <p className="text-gray-600">
             Gestiona los documentos que necesitas para tus aplicaciones a universidades
           </p>
         </div>
 
         {/* Sección de Documentos Estándar */}
-        <section className="mb-8 bg-white rounded-2xl p-6 border border-gray-200">
-          <div className="flex items-center justify-between mb-4">
+        <section className="mb-6 sm:mb-8 bg-white rounded-2xl p-4 sm:p-6 border border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Documentos Estándar</h2>
               <p className="text-sm text-gray-500">Requeridos para aplicar a cualquier universidad</p>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <span className={`text-2xl font-bold ${standardCompleted === standardRequirements.length ? 'text-green-600' : 'text-amber-600'}`}>
                 {standardCompleted}/{standardRequirements.length}
               </span>
@@ -348,7 +348,7 @@ export default function Documents() {
                 return (
                   <div
                     key={requirement.id}
-                    className={`flex items-center gap-4 p-4 rounded-lg border ${
+                    className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 rounded-lg border ${
                       isComplete
                         ? 'bg-green-50 border-green-200'
                         : 'bg-amber-50 border-amber-200'
@@ -386,7 +386,7 @@ export default function Documents() {
                         Completado
                       </span>
                     ) : (
-                      <label className="cursor-pointer">
+                      <label className="cursor-pointer self-start sm:self-auto">
                         <input
                           type="file"
                           className="hidden"
@@ -413,7 +413,7 @@ export default function Documents() {
         </section>
 
         {/* Sección de subida libre de documentos */}
-        <section className="mb-8 bg-white rounded-2xl p-6 border border-gray-200">
+        <section className="mb-6 sm:mb-8 bg-white rounded-2xl p-4 sm:p-6 border border-gray-200">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Subir otros documentos</h2>
             <p className="text-sm text-gray-500">

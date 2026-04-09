@@ -42,7 +42,7 @@ export const ScholarshipCard = ({ scholarship, onClick }: ScholarshipCardProps) 
   return (
     <div
       onClick={() => onClick(scholarship)}
-      className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group flex flex-col"
+      className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group flex flex-col"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">

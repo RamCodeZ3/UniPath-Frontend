@@ -1,5 +1,39 @@
 @import "tailwindcss";
 
+:root {
+  --mobile-tabbar-height: 4.25rem;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.mobile-main-offset {
+  padding-bottom: calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom));
+}
+
+.mobile-tabbar {
+  height: calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 768px) {
+  .mobile-main-offset {
+    padding-bottom: 0;
+  }
+
+  .mobile-tabbar {
+    height: auto;
+    padding-bottom: 0;
+  }
+}
+
 /* Fix for PrimeReact Modal Mask */
 .p-component-overlay {
   background-color: rgba(0, 0, 0, 0.4) !important;
