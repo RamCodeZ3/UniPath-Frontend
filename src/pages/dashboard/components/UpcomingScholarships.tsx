@@ -68,8 +68,10 @@ export const UpcomingScholarships = ({ scholarships, onOpenScholarships }: Upcom
                     <p className="text-xs text-gray-600 mt-1 line-clamp-1">{scholarship.offered_by}</p>
                   </div>
                   {remainingDays !== null && (
-                    <span className={`text-[11px] px-2 py-1 rounded-full border font-medium ${urgencyClass}`}>
-                      {remainingDays <= 0 ? 'Cierra hoy' : `${remainingDays} dias`}
+                    <span
+                      className={`inline-flex items-center justify-center text-center text-[11px] leading-tight px-2 py-1 rounded-full border font-medium whitespace-normal ${urgencyClass}`}
+                    >
+                      {remainingDays <= 0 ? 'Cierra hoy' : `${remainingDays} días`}
                     </span>
                   )}
                 </div>
