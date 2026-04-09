@@ -62,10 +62,18 @@ export const UniversityCard = ({ university, onClick }: UniversityCardProps) => 
       onClick={() => onClick(university)}
       className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group flex flex-col"
     >
-      {/* Header con icono y badges */}
+      {/* Header con logo y badges */}
       <div className="flex items-start justify-between mb-4">
-        <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-          <BuildingIcon className="w-7 h-7 text-blue-600" />
+        <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors overflow-hidden">
+          {university.logo_url ? (
+            <img
+              src={university.logo_url}
+              alt={`Logo de ${university.name}`}
+              className="w-full h-full object-contain"
+            />
+          ) : (
+            <BuildingIcon className="w-7 h-7 text-blue-600" />
+          )}
         </div>
         <div className="flex items-center gap-2">
           {/* Badge de acreditación */}

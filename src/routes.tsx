@@ -74,9 +74,9 @@ const routes = [
              element: <ApplicationDocuments />,
            },
          ],
-      },
-    ],
-  },
-];
+       },
+     ],
+   },
+ ];
 
 export default routes;
