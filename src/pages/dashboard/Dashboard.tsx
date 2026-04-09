@@ -1,94 +1,241 @@
+import { useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import type { AppDispatch, RootState } from '../../store/store';
+import { fetchGetUserApplications } from '../../store/application/thunks';
+import { fetchGetDocumentsByProfileId } from '../../store/document/thunks';
+import {
+  fetchGetAllScholarships,
+  fetchGetScholarshipApplicationsByProfileId,
+} from '../../store/scholarship/thunk';
+import { KpiCards } from './components/KpiCards';
+import { NextActionCard } from './components/NextActionCard';
+import { ProgressHero } from './components/ProgressHero';
+import { QuickActions, type QuickActionItem } from './components/QuickActions';
+import { UpcomingScholarships } from './components/UpcomingScholarships';
 
-const BuildingIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4" />
-  </svg>
-);
+interface PrimaryActionConfig {
+  label: string;
+  description: string;
+  target: string;
+  icon?: string;
+}
 
 export default function Dashboard() {
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
+  const { profile, user } = useSelector((state: RootState) => state.auth);
+  const { documents, status: documentStatus } = useSelector((state: RootState) => state.document);
+  const { applications: universityApplications, fetchStatus: universityFetchStatus } = useSelector(
+    (state: RootState) => state.application
+  );
+  const {
+    scholarships,
+    applications: scholarshipApplications,
+    status: scholarshipStatus,
+    applicationStatus: scholarshipApplicationStatus,
+  } = useSelector((state: RootState) => state.scholarship);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    dispatch(fetchGetDocumentsByProfileId(profile.id));
+    dispatch(fetchGetUserApplications(profile.id));
+    dispatch(fetchGetScholarshipApplicationsByProfileId(profile.id));
+    dispatch(fetchGetAllScholarships());
+  }, [dispatch, profile?.id]);
+
+  const userName =
+    profile?.name || user?.user_metadata?.name || user?.user_metadata?.full_name || 'Estudiante';
+
+  const profileComplete = useMemo(() => {
+    if (!profile) return false;
+
+    return Boolean(profile.birthdate && profile.number && profile.genre);
+  }, [profile]);
+
+  const mandatoryMilestones = useMemo(
+    () => [
+      { label: 'Completar perfil', done: profileComplete },
+      { label: 'Subir al menos 1 documento', done: documents.length > 0 },
+      {
+        label: 'Enviar 1 postulacion (universidad o beca)',
+        done: universityApplications.length + scholarshipApplications.length > 0,
+      },
+      {
+        label: 'Mantener oportunidades activas',
+        done:
+          scholarshipApplications.some((app) => app.status === 'pending' || app.status === 'in_review') ||
+          universityApplications.some((app) => app.status === 'pending'),
+      },
+    ],
+    [documents.length, profileComplete, scholarshipApplications, universityApplications]
+  );
+
+  const completedMilestones = mandatoryMilestones.filter((step) => step.done).length;
+
+  const primaryAction = useMemo<PrimaryActionConfig>(() => {
+    if (!profileComplete) {
+      return {
+        label: 'Completar perfil',
+        description: 'Actualiza tus datos personales para habilitar postulaciones mas precisas.',
+        target: '/profile',
+        icon: 'pi pi-user-edit',
+      };
+    }
+
+    if (documents.length === 0) {
+      return {
+        label: 'Subir documentos',
+        description: 'Sube tus documentos base para acelerar postulaciones a universidades y becas.',
+        target: '/documents',
+        icon: 'pi pi-file-import',
+      };
+    }
+
+    if (scholarshipApplications.length === 0) {
+      return {
+        label: 'Aplicar a una beca',
+        description: 'Empieza por una beca abierta para aumentar tus opciones de financiamiento.',
+        target: '/scholarships',
+        icon: 'pi pi-graduation-cap',
+      };
+    }
+
+    if (universityApplications.length === 0) {
+      return {
+        label: 'Aplicar a una universidad',
+        description: 'Complementa tu ruta aplicando tambien a una universidad de interes.',
+        target: '/universities',
+        icon: 'pi pi-building',
+      };
+    }
+
+    return {
+      label: 'Explorar nuevas becas',
+      description: 'Ya tienes postulaciones activas. Revisa nuevas oportunidades y fechas cercanas.',
+      target: '/scholarships',
+      icon: 'pi pi-compass',
+    };
+  }, [documents.length, profileComplete, scholarshipApplications.length, universityApplications.length]);
+
+  const openScholarships = useMemo(() => {
+    const today = new Date();
+
+    return scholarships
+      .filter((scholarship) => scholarship.status === 'open')
+      .filter((scholarship) => {
+        const deadline = scholarship.application_deadline
+          ? new Date(scholarship.application_deadline)
+          : null;
+
+        if (!deadline || Number.isNaN(deadline.getTime())) return true;
+        return deadline.getTime() >= today.getTime() - 24 * 60 * 60 * 1000;
+      })
+      .sort((a, b) => {
+        const dateA = a.application_deadline ? new Date(a.application_deadline).getTime() : Number.MAX_SAFE_INTEGER;
+        const dateB = b.application_deadline ? new Date(b.application_deadline).getTime() : Number.MAX_SAFE_INTEGER;
+        return dateA - dateB;
+      })
+      .slice(0, 4);
+  }, [scholarships]);
+
+  const quickActions = useMemo<QuickActionItem[]>(
+    () => [
+      {
+        title: 'Explorar universidades',
+        description: 'Filtra universidades por modalidad y estado para decidir tu proxima postulacion.',
+        icon: 'pi-building',
+        onClick: () => navigate('/universities'),
+      },
+      {
+        title: 'Explorar becas',
+        description: 'Consulta becas abiertas y aplica con tus documentos ya cargados.',
+        icon: 'pi-graduation-cap',
+        onClick: () => navigate('/scholarships'),
+      },
+      {
+        title: 'Gestionar documentos',
+        description: 'Sube, revisa y organiza tus documentos disponibles para aplicar.',
+        icon: 'pi-file',
+        onClick: () => navigate('/documents'),
+      },
+      {
+        title: 'Actualizar perfil',
+        description: 'Mantener tu perfil completo mejora la calidad de tus recomendaciones.',
+        icon: 'pi-user',
+        onClick: () => navigate('/profile'),
+      },
+    ],
+    [navigate]
+  );
+
+  const isLoading =
+    documentStatus === 'pending' ||
+    universityFetchStatus === 'pending' ||
+    scholarshipStatus === 'pending' ||
+    scholarshipApplicationStatus === 'pending';
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 min-h-[calc(100vh-4rem)]">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-5">
+          <div className="h-56 rounded-3xl bg-white border border-gray-100 animate-pulse" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, index) => (
+              <div
+                key={index}
+                className="h-32 rounded-2xl bg-white border border-gray-100 animate-pulse"
+              />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            <div className="xl:col-span-2 h-56 rounded-2xl bg-white border border-gray-100 animate-pulse" />
+            <div className="h-56 rounded-2xl bg-white border border-gray-100 animate-pulse" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-gray-50">
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Bienvenido a UniPath
-          </h1>
-          <p className="text-gray-500">
-            Tu guía para encontrar la universidad perfecta
-          </p>
-        </div>
+    <div className="bg-gray-50 min-h-[calc(100vh-4rem)]">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
+        <ProgressHero
+          userName={userName}
+          completedSteps={completedMilestones}
+          totalSteps={mandatoryMilestones.length}
+          milestones={mandatoryMilestones}
+          primaryActionLabel={primaryAction.label}
+          primaryActionDescription={primaryAction.description}
+          onPrimaryAction={() => navigate(primaryAction.target)}
+        />
 
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          
-          <div
-            onClick={() => navigate('/universities')}
-            className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group"
-          >
-            <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
-              <BuildingIcon className="w-7 h-7 text-blue-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-              Explorar universidades
-            </h3>
-            <p className="text-sm text-gray-500">
-              Descubre y filtra universidades según tus preferencias
-            </p>
-            <div className="mt-4 flex items-center text-blue-600 text-sm font-medium">
-              Ver galería
-              <i className="pi pi-arrow-right ml-2 text-xs" />
-            </div>
-          </div>
+        <KpiCards
+          profileComplete={profileComplete}
+          documentsCount={documents.length}
+          universityApplicationsCount={universityApplications.length}
+          scholarshipApplicationsCount={scholarshipApplications.length}
+        />
 
-          {/* Placeholder cards para futuras funcionalidades */}
-          {/* 
-            TODO: UI/UX - Integrar DocumentRecommender cuando esté lista la página de documentos
-            
-            Importar:
-            import DocumentRecommender from '../../shared/components/DocumentRecommender';
-            
-            Uso (requiere profileId y universityId):
-            <DocumentRecommender 
-              profileId={profile?.id} 
-              universityId={selectedUniversityId} 
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+          <div className="xl:col-span-2 space-y-5">
+            <NextActionCard
+              title="Tu enfoque de esta semana"
+              description={primaryAction.description}
+              actionLabel={primaryAction.label}
+              actionIcon={primaryAction.icon}
+              onAction={() => navigate(primaryAction.target)}
             />
-            
-            También se puede usar con Redux:
-            import { useDispatch, useSelector } from 'react-redux';
-            import { fetchRecommendDocuments } from '../../store/document/thunks';
-            import type { RootState } from '../../store/store';
-            
-            const dispatch = useDispatch();
-            const { recommendation, recommendationStatus } = useSelector((state: RootState) => state.document);
-            dispatch(fetchRecommendDocuments({ profileId, universityId }));
-          */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 opacity-50">
-            <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-              <i className="pi pi-file text-2xl text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Mis documentos
-            </h3>
-            <p className="text-sm text-gray-500">
-              Próximamente
-            </p>
+
+            <QuickActions actions={quickActions} />
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 opacity-50">
-            <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
-              <i className="pi pi-heart text-2xl text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Favoritos
-            </h3>
-            <p className="text-sm text-gray-500">
-              Próximamente
-            </p>
-          </div>
+          <UpcomingScholarships
+            scholarships={openScholarships}
+            onOpenScholarships={() => navigate('/scholarships')}
+          />
         </div>
       </main>
     </div>
