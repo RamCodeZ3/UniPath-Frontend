@@ -32,7 +32,7 @@ const daysUntil = (value?: string) => {
 
 export const UpcomingScholarships = ({ scholarships, onOpenScholarships }: UpcomingScholarshipsProps) => {
   return (
-    <section className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+    <section className="bg-white border border-gray-100 rounded-2xl p-4 sm:p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Becas con cierre cercano</h2>
@@ -61,15 +61,15 @@ export const UpcomingScholarships = ({ scholarships, onOpenScholarships }: Upcom
                 : 'bg-amber-50 text-amber-700 border-amber-100';
 
             return (
-              <article key={scholarship.id} className="border border-gray-100 rounded-xl p-3">
+              <article key={scholarship.id} className="border border-gray-100 rounded-xl p-3 sm:p-3.5">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-900 line-clamp-1">{scholarship.title}</h3>
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-1">{scholarship.offered_by}</p>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">{scholarship.title}</h3>
+                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">{scholarship.offered_by}</p>
                   </div>
                   {remainingDays !== null && (
                     <span
-                      className={`inline-flex items-center justify-center text-center text-[11px] leading-tight px-2 py-1 rounded-full border font-medium whitespace-normal ${urgencyClass}`}
+                      className={`inline-flex items-center justify-center text-center text-[11px] leading-tight px-2 py-1 rounded-full border font-medium whitespace-normal self-start shrink-0 min-w-14 ${urgencyClass}`}
                     >
                       {remainingDays <= 0 ? 'Cierra hoy' : `${remainingDays} días`}
                     </span>

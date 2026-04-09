@@ -291,10 +291,10 @@ export default function ScholarshipApplicationDocuments() {
     <div className="bg-gray-50 min-h-screen">
       <Toast ref={toastRef} />
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
         <ScholarshipHeader scholarshipTitle={scholarshipTitle} onBack={handleBack} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-6 sm:mt-8">
           <div className="lg:col-span-2 space-y-6">
             <ScholarshipRequirementsList
               requirements={state.requirements}
@@ -303,7 +303,7 @@ export default function ScholarshipApplicationDocuments() {
             />
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-first lg:order-none">
             <ScholarshipSummary
               completedCount={completedCount}
               totalCount={totalCount}

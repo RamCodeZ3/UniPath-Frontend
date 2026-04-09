@@ -129,43 +129,48 @@ export default function Profile() {
 
   return (
     <div className="bg-gray-50 min-h-[calc(100vh-4rem)]">
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Mi Perfil</h1>
             <p className="text-gray-500 mt-1">Tu información personal y de contacto</p>
           </div>
           <Button 
             label="Cerrar sesión" 
             icon="pi pi-power-off" 
+            iconPos="right"
             severity="danger" 
             text 
-            className="hover:bg-red-50"
+            className="hover:bg-red-50 !inline-flex !items-center !justify-center !gap-2"
             onClick={handleLogout}
           />
         </div>
 
         <div className="space-y-6">
           {/* Header Card */}
-          <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-            <div className="flex flex-col items-center md:flex-row md:items-start gap-8">
-              <div className="w-32 h-32 rounded-3xl bg-blue-600 flex items-center justify-center text-white text-4xl font-bold shadow-lg shadow-blue-200">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 p-5 sm:p-8 shadow-sm">
+            <div className="flex flex-col items-center md:flex-row md:items-start gap-6 sm:gap-8">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl sm:rounded-3xl bg-blue-600 flex items-center justify-center text-white text-3xl sm:text-4xl font-bold shadow-lg shadow-blue-200">
                 {userName.substring(0, 1).toUpperCase()}
               </div>
 
               <div className="flex-1 text-center md:text-left space-y-2">
                 <div className="flex flex-col">
-                  <div className="flex items-center justify-center md:justify-start gap-2">
-                    <h2 className="text-3xl font-bold text-gray-900 leading-tight">{userName}</h2>
+                  <div className="flex justify-center md:justify-start">
+                    <div className="relative inline-block max-w-full">
+                      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight break-words text-center md:text-left">
+                        {userName}
+                      </h2>
                     <Button 
                       icon="pi pi-pencil" 
                       text 
                       rounded 
-                      className="w-8 h-8"
+                        className="w-8 h-8 !absolute !left-full !ml-1 !top-1/2 !-translate-y-1/2"
                       onClick={() => handleEditClick('name', 'Nombre Completo', profile?.name)}
                     />
+                    </div>
                   </div>
-                  <p className="text-gray-500 font-medium">{user?.email}</p>
+                  <p className="text-gray-500 font-medium break-all">{user?.email}</p>
                 </div>
                 <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
                   <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full">
@@ -206,9 +211,9 @@ export default function Profile() {
           </div>
 
           {/* Account Status */}
-          <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-gray-100 p-5 sm:p-6 shadow-sm">
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Estado de la cuenta</h3>
-            <div className="flex items-center gap-3 text-green-600 bg-green-50 p-4 rounded-2xl border border-green-100">
+            <div className="flex items-start sm:items-center gap-3 text-green-600 bg-green-50 p-4 rounded-2xl border border-green-100">
               <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                 <i className="pi pi-check text-sm" />
               </div>

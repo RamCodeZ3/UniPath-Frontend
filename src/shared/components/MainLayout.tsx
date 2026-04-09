@@ -7,7 +7,7 @@ export const MainLayout = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <AuthListener />
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 mobile-main-offset">
         <Outlet />
       </main>
     </div>

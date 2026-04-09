@@ -59,7 +59,7 @@ export const UniversityFilters = ({
     filters.search;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 sticky top-24">
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 lg:sticky lg:top-24">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">

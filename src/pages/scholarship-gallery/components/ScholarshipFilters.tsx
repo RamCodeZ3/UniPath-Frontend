@@ -52,7 +52,7 @@ export const ScholarshipFilters = ({
     Boolean(filters.search) || filters.status !== '' || filters.coversTuition !== null;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 sticky top-24">
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 lg:sticky lg:top-24">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">

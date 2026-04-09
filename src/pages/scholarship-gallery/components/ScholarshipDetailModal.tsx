@@ -63,7 +63,7 @@ export const ScholarshipDetailModal = ({
   if (!scholarship) return null;
 
   const headerContent = (
-    <div className="flex items-center gap-3 pt-8 pb-2 px-6">
+    <div className="flex items-center gap-3 pt-5 sm:pt-8 pb-2 px-4 sm:px-6">
       <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 border border-blue-100">
         <ScholarshipIcon className="w-6 h-6 text-blue-600" />
       </div>
@@ -81,7 +81,7 @@ export const ScholarshipDetailModal = ({
       header={headerContent}
       visible={visible}
       onHide={onHide}
-      style={{ width: '95vw', maxWidth: '620px' }}
+      style={{ width: '96vw', maxWidth: '620px' }}
       modal
       dismissableMask
       className="scholarship-detail-modal"
@@ -92,7 +92,7 @@ export const ScholarshipDetailModal = ({
           <i className="pi pi-spin pi-spinner text-4xl text-blue-600" />
         </div>
       ) : (
-        <div className="px-6 pb-8 pt-2 space-y-6">
+        <div className="px-4 sm:px-6 pb-6 sm:pb-8 pt-2 space-y-6">
           <div className="flex flex-wrap gap-2">
             <span
               className={`px-3 py-1.5 rounded-full text-sm font-medium ${
