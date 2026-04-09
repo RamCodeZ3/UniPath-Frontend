@@ -21,7 +21,6 @@ const DocumentIcon = ({ type, className }: { type: string; className?: string })
     );
   }
 
-  // Icono genérico para imágenes
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
@@ -43,6 +42,21 @@ const TrashIcon = ({ className }: { className?: string }) => (
     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
     <line x1="10" y1="11" x2="10" y2="17"></line>
     <line x1="14" y1="11" x2="14" y2="17"></line>
+  </svg>
+);
+
+const EyeIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+    <circle cx="12" cy="12" r="3"></circle>
+  </svg>
+);
+
+const ExternalLinkIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+    <polyline points="15 3 21 3 21 9"></polyline>
+    <line x1="10" y1="14" x2="21" y2="3"></line>
   </svg>
 );
 
@@ -74,6 +88,32 @@ export const DocumentList = ({
 }: DocumentListProps) => {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [selectedDeleteDoc, setSelectedDeleteDoc] = useState<SB_Documents | null>(null);
+  const [previewDocument, setPreviewDocument] = useState<SB_Documents | null>(null);
+
+  const getDisplayName = (doc: SB_Documents): string => {
+    const raw = doc.document_name || doc.document_path.split('/').pop() || 'Documento';
+    return decodeURIComponent(raw)
+      .replace(/^\d+-/, '')
+      .replace(/[_]/g, ' ')
+      .trim();
+  };
+
+  const getFileType = (doc: SB_Documents): 'image' | 'pdf' | 'other' => {
+    const fileName = doc.document_name || doc.document_path || '';
+    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+      return 'image';
+    }
+    if (extension === 'pdf') {
+      return 'pdf';
+    }
+    return 'other';
+  };
+
+  const getPreviewUrl = (doc: SB_Documents): string => {
+    return doc.document_path;
+  };
 
   const formatDate = (dateString?: string): string => {
     if (!dateString) return '-';
@@ -103,40 +143,9 @@ export const DocumentList = ({
   };
 
   const handleDownload = (doc: SB_Documents) => {
-    const fileName = doc.document_name || doc.document_path.split('/').pop() || 'documento';
+    const fileName = getDisplayName(doc);
     onDownload(doc.document_path, fileName);
   };
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-        <p className="text-red-700 font-medium">Error al cargar documentos</p>
-        <p className="text-red-600 text-sm">{error}</p>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div>
-        <SkeletonLoader />
-        <SkeletonLoader />
-        <SkeletonLoader />
-      </div>
-    );
-  }
-
-  if (documents.length === 0) {
-    return (
-      <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-8 text-center">
-        <div className="flex justify-center mb-3">
-          <DocumentIcon type="image" className="w-12 h-12 text-gray-400" />
-        </div>
-        <p className="text-gray-700 font-medium mb-1">No tienes documentos cargados</p>
-        <p className="text-gray-500 text-sm">Sube tu primer documento para empezar</p>
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -147,7 +156,6 @@ export const DocumentList = ({
             className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between gap-4">
-              {/* Información del documento */}
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -160,25 +168,32 @@ export const DocumentList = ({
                   </div>
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <p className="text-gray-900 font-medium truncate hover:text-blue-600 cursor-pointer">
-                    {doc.document_name || doc.document_path.split('/').pop() || 'Documento'}
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setPreviewDocument(doc)}>
+                  <p className="text-gray-900 font-medium truncate hover:text-blue-600 transition-colors">
+                    {getDisplayName(doc)}
                   </p>
                   <div className="flex items-center gap-3 text-sm text-gray-500">
                     <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium text-gray-700">
                       {getFileTypeLabel(doc.document_name || doc.document_path)}
                     </span>
-                    <span>{formatDate()}</span>
+                    <span>{formatDate(doc.created_at)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Acciones */}
               <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setPreviewDocument(doc)}
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors"
+                  title="Vista previa"
+                >
+                  <EyeIcon className="w-4 h-4" />
+                </button>
+
                 <button
                   onClick={() => handleDownload(doc)}
                   disabled={isDeleting}
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-gray-600 hover:bg-green-50 hover:text-green-600 hover:border-green-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Descargar"
                 >
                   <DownloadIcon className="w-4 h-4" />
@@ -198,7 +213,6 @@ export const DocumentList = ({
         ))}
       </div>
 
-      {/* Modal de confirmación de eliminación */}
       <Dialog
         visible={deleteConfirm !== null}
         onHide={() => setDeleteConfirm(null)}
@@ -218,7 +232,9 @@ export const DocumentList = ({
               disabled={isDeleting}
               className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {isDeleting && <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>}
+              {isDeleting && (
+                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              )}
               {isDeleting ? 'Eliminando...' : 'Eliminar'}
             </button>
           </div>
@@ -226,8 +242,78 @@ export const DocumentList = ({
       >
         <p className="text-gray-700">
           ¿Estás seguro de que deseas eliminar{' '}
-          <span className="font-medium">{selectedDeleteDoc?.document_name}</span>? Esta acción no se puede deshacer.
+          <span className="font-medium">
+            {selectedDeleteDoc ? getDisplayName(selectedDeleteDoc) : ''}
+          </span>
+          ? Esta acción no se puede deshacer.
         </p>
+      </Dialog>
+
+      <Dialog
+        visible={previewDocument !== null}
+        onHide={() => setPreviewDocument(null)}
+        header={
+          previewDocument ? (
+            <div className="flex items-center gap-2">
+              <span>{getDisplayName(previewDocument)}</span>
+              {getFileType(previewDocument) !== 'pdf' && (
+                <button
+                  onClick={() => {
+                    window.open(getPreviewUrl(previewDocument), '_blank');
+                  }}
+                  className="ml-2 p-1 rounded hover:bg-gray-100 transition-colors"
+                  title="Abrir en nueva pestaña"
+                >
+                  <ExternalLinkIcon className="w-4 h-4 text-gray-500" />
+                </button>
+              )}
+            </div>
+          ) : null
+        }
+        modal
+        style={{ width: '90vw', maxWidth: '800px' }}
+        contentClassName="p-0"
+      >
+        {previewDocument && (
+          <div className="flex flex-col items-center">
+            {getFileType(previewDocument) === 'image' && (
+              <img
+                src={getPreviewUrl(previewDocument)}
+                alt={getDisplayName(previewDocument)}
+                className="max-w-full max-h-[70vh] object-contain"
+              />
+            )}
+            
+            {getFileType(previewDocument) === 'pdf' && (
+              <div className="w-full h-[70vh]">
+                <iframe
+                  src={`${getPreviewUrl(previewDocument)}#toolbar=0`}
+                  className="w-full h-full border-0"
+                  title={getDisplayName(previewDocument)}
+                />
+              </div>
+            )}
+            
+            {getFileType(previewDocument) === 'other' && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <DocumentIcon
+                  type="file"
+                  className="w-16 h-16 text-gray-400 mb-4"
+                />
+                <p className="text-gray-600 mb-4">
+                  Vista previa no disponible para este tipo de archivo
+                </p>
+                <button
+                  onClick={() => handleDownload(previewDocument)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  <DownloadIcon className="w-4 h-4" />
+                  Descargar archivo
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </Dialog>
     </div>
   );

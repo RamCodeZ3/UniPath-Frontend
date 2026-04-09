@@ -12,6 +12,7 @@ export interface SB_University {
   accredited: boolean;
   accrediting_body: string | null;
   status: UniversityStatus;
+  logo_url: string | null;
   created_at?: string;
 }
 

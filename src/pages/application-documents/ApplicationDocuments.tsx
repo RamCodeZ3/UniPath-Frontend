@@ -10,11 +10,13 @@ import {
   createApplicationWithDocuments,
   type RequirementStatus,
 } from '../../shared/services/applicationDocumentService';
+import { recommendDocuments } from '../../shared/services/geminiService';
 import supabase from '../../config/supabase/supabase';
 import { UniversityHeader } from './components/UniversityHeader';
 import { RequirementsList } from './components/RequirementsList';
 import { PaymentSummary } from './components/PaymentSummary';
 import { DiscardChangesModal } from './components/DiscardChangesModal';
+import { DocumentRecommendationCard } from './components/DocumentRecommendationCard';
 
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -25,6 +27,11 @@ interface ApplicationDocumentsState {
   isLoading: boolean;
   isConfirming: boolean;
   error: string | null;
+}
+
+interface RecommendationData {
+  answer: string;
+  documents_used: number;
 }
 
 export default function ApplicationDocuments() {
@@ -49,6 +56,9 @@ export default function ApplicationDocuments() {
   const [uploadingRequirementId, setUploadingRequirementId] = useState<string | null>(
     null
   );
+  const [recommendation, setRecommendation] = useState<RecommendationData | null>(null);
+  const [recommendationLoading, setRecommendationLoading] = useState(true);
+  const [recommendationError, setRecommendationError] = useState<string | null>(null);
 
   const universityName = (location.state as any)?.universityName || 'Universidad';
 
@@ -96,6 +106,23 @@ export default function ApplicationDocuments() {
           additionalRequirements: matchedAdditional,
           isLoading: false,
         }));
+
+        // Cargar recomendación de Gemini automáticamente
+        try {
+          const result = await recommendDocuments(profile.id, universityId);
+          if (result?.error) {
+            setRecommendationError(result.error);
+            console.error('[ApplicationDocuments] Gemini API error:', result.error);
+          } else {
+            setRecommendation(result);
+          }
+        } catch (geminiError) {
+          const errorMessage = geminiError instanceof Error ? geminiError.message : 'Error desconocido';
+          setRecommendationError(errorMessage);
+          console.error('[ApplicationDocuments] Gemini recommendation error:', errorMessage);
+        } finally {
+          setRecommendationLoading(false);
+        }
       } catch (error) {
         console.error('[ApplicationDocuments] Error:', error);
         const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
@@ -188,7 +215,8 @@ export default function ApplicationDocuments() {
       }
 
       // 1. SUBIR ARCHIVO A STORAGE INMEDIATAMENTE
-      const filePath = `${profile.id}/${Date.now()}-${file.name}`;
+      const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const filePath = `${profile.id}/${Date.now()}-${cleanName}`;
       const { error: uploadError } = await supabase.storage
         .from('documents_users')
         .upload(filePath, file, { upsert: false });
@@ -364,6 +392,18 @@ export default function ApplicationDocuments() {
       <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <UniversityHeader universityName={universityName} onBack={handleBackWithWarning} />
+
+        {/* Recomendación de Gemini */}
+        {!state.isLoading && (
+          <div className="mt-6">
+            <DocumentRecommendationCard
+              answer={recommendation?.answer}
+              loading={recommendationLoading}
+              error={recommendationError}
+              documentsUsed={recommendation?.documents_used}
+            />
+          </div>
+        )}
 
         {/* Contenido Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
