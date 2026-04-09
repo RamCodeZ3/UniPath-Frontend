@@ -10,13 +10,6 @@ import { signOut } from '../../shared/services/authService';
 import { updateProfile } from '../../shared/services/profileService';
 import { setProfile } from '../../store/auth/authSlice';
 
-const UserIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
 const CalendarIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -167,20 +160,28 @@ export default function Profile() {
               </div>
 
               <div className="flex-1 text-center md:text-left space-y-2">
-                <div className="flex flex-col md:flex-row md:items-center gap-2">
-                  <h2 className="text-3xl font-bold text-gray-900">{userName}</h2>
-                  <Button 
-                    icon="pi pi-pencil" 
-                    text 
-                    rounded 
-                    className="w-8 h-8 md:ml-2"
-                    onClick={() => handleEditClick('name', 'Nombre Completo', profile?.name)}
-                  />
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-center md:justify-start gap-2">
+                    <h2 className="text-3xl font-bold text-gray-900 leading-tight">{userName}</h2>
+                    <Button 
+                      icon="pi pi-pencil" 
+                      text 
+                      rounded 
+                      className="w-8 h-8"
+                      onClick={() => handleEditClick('name', 'Nombre Completo', profile?.name)}
+                    />
+                  </div>
+                  <p className="text-gray-500 font-medium">{user?.email}</p>
                 </div>
-                <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
                   <span className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full">
                     Estudiante
                   </span>
+                  {profile?.birthdate && (
+                    <span className="px-3 py-1 bg-gray-50 text-gray-600 text-sm font-medium rounded-full">
+                      {getAge(profile.birthdate)} años
+                    </span>
+                  )}
                   {profile?.genre && (
                     <button 
                       onClick={() => handleEditClick('genre', 'Género', profile?.genre)}
@@ -197,11 +198,6 @@ export default function Profile() {
           {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoItem 
-              icon={<MailIcon className="w-6 h-6" />}
-              label="Correo electrónico"
-              value={user?.email}
-            />
-            <InfoItem 
               icon={<PhoneIcon className="w-6 h-6" />}
               label="Teléfono"
               value={profile?.number}
@@ -212,11 +208,6 @@ export default function Profile() {
               label="Fecha de nacimiento"
               value={formatBirthdate(profile?.birthdate)}
               onEdit={() => handleEditClick('birthdate', 'Fecha de Nacimiento', profile?.birthdate)}
-            />
-            <InfoItem 
-              icon={<UserIcon className="w-6 h-6" />}
-              label="Edad"
-              value={profile?.birthdate ? `${getAge(profile.birthdate)} años` : '—'}
             />
           </div>
 
