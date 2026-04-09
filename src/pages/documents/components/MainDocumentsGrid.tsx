@@ -1,5 +1,4 @@
 import React from 'react';
-import { getFileNameFromPath } from '../../../shared/utils/fileValidator';
 
 interface MainDocument {
   id: string;
@@ -57,7 +56,7 @@ export const MainDocumentsGrid: React.FC<MainDocumentsGridProps> = ({
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-sm text-green-700 font-medium mb-2">✅ Ya lo tienes</p>
               <p className="text-xs text-gray-600 truncate flex items-center gap-1">
-                <span>📄</span> {getFileNameFromPath(doc.documentPath) || 'Documento guardado'}
+                <span>📄</span> Documento guardado
               </p>
               <label className="mt-4 block">
                 <div className="text-xs font-medium text-blue-600 hover:text-blue-700 cursor-pointer transition-colors">

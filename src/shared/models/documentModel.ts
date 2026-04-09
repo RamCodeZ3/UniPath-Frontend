@@ -5,6 +5,7 @@ export interface SB_Documents{
     type?: string;
     document_path: string;
     enrollment_requirement_id?: string;
+    created_at?: string;
 }
 
 /**

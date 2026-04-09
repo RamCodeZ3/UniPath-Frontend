@@ -25,12 +25,6 @@ const PhoneIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const MailIcon = ({ className }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-    <polyline points="22,6 12,13 2,6" />
-  </svg>
-);
 
 const InfoItem = ({ icon, label, value, onEdit }: { icon: React.ReactNode, label: string, value: string | null | undefined, onEdit?: () => void }) => (
   <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-all hover:bg-white hover:shadow-sm group">
