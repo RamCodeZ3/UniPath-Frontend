@@ -130,7 +130,7 @@ export const DocumentUploadZone = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer ${
+        className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-12 text-center transition-all duration-300 cursor-pointer ${
           !canUpload
             ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60'
             : isDragging

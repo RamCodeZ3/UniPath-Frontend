@@ -152,7 +152,7 @@ export const DocumentList = ({
                   <p className="text-gray-900 font-medium truncate hover:text-blue-600 transition-colors">
                     {getDisplayName(doc)}
                   </p>
-                  <div className="flex items-center gap-3 text-sm text-gray-500">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-gray-500">
                     <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-medium text-gray-700">
                       {getFileTypeLabel(doc.document_name || doc.document_path)}
                     </span>

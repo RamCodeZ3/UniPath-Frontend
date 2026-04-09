@@ -180,9 +180,9 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <div className="bg-gray-50 min-h-[calc(100vh-4rem)]">
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-5">
-          <div className="h-56 rounded-3xl bg-white border border-gray-100 animate-pulse" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-5">
+          <div className="h-56 sm:h-52 rounded-2xl sm:rounded-3xl bg-white border border-gray-100 animate-pulse" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             {[...Array(4)].map((_, index) => (
               <div
                 key={index}
@@ -190,7 +190,8 @@ export default function Dashboard() {
               />
             ))}
           </div>
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+          <div className="h-44 rounded-2xl bg-white border border-gray-100 animate-pulse" />
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-5">
             <div className="xl:col-span-2 h-56 rounded-2xl bg-white border border-gray-100 animate-pulse" />
             <div className="h-56 rounded-2xl bg-white border border-gray-100 animate-pulse" />
           </div>
@@ -201,7 +202,7 @@ export default function Dashboard() {
 
   return (
     <div className="bg-gray-50 min-h-[calc(100vh-4rem)]">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-5">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-5">
         <ProgressHero
           userName={userName}
           completedSteps={completedMilestones}
@@ -219,16 +220,16 @@ export default function Dashboard() {
           scholarshipApplicationsCount={scholarshipApplications.length}
         />
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-          <div className="xl:col-span-2 space-y-5">
-            <NextActionCard
-              title="Tu enfoque de esta semana"
-              description={primaryAction.description}
-              actionLabel={primaryAction.label}
-              actionIcon={primaryAction.icon}
-              onAction={() => navigate(primaryAction.target)}
-            />
+        <NextActionCard
+          title="Tu enfoque de esta semana"
+          description={primaryAction.description}
+          actionLabel={primaryAction.label}
+          actionIcon={primaryAction.icon}
+          onAction={() => navigate(primaryAction.target)}
+        />
 
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-5">
+          <div className="xl:col-span-2">
             <QuickActions actions={quickActions} />
           </div>
 
