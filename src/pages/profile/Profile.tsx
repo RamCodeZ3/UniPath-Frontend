@@ -141,7 +141,7 @@ export default function Profile() {
             iconPos="right"
             severity="danger" 
             text 
-            className="hover:bg-red-50 !inline-flex !items-center !justify-center !gap-2"
+            className="hover:bg-red-50 !inline-flex !items-center !justify-center !gap-1 [&_.p-button-icon-right]:!ml-1"
             onClick={handleLogout}
           />
         </div>
