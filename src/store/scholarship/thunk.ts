@@ -10,8 +10,8 @@ import type {
 import type { SB_Scholarship } from '../../shared/models/scholarshipsModel';
 
 import {
-  getAllScholarshis,
-  getScholarshiById,
+  getAllScholarships,
+  getScholarshipById,
   getScholarshipFullDetail,
 } from '../../shared/services/scholarshipService';
 
@@ -37,7 +37,7 @@ export const fetchGetAllScholarships = createAsyncThunk<SB_Scholarship[], void>(
   'scholarship/fetchGetAllScholarships',
   async (_, { rejectWithValue }) => {
     try {
-      return await getAllScholarshis();
+      return await getAllScholarships();
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -48,7 +48,7 @@ export const fetchGetScholarshipById = createAsyncThunk<SB_Scholarship, string>(
   'scholarship/fetchGetScholarshipById',
   async (scholarshipId, { rejectWithValue }) => {
     try {
-      return await getScholarshiById(scholarshipId);
+      return await getScholarshipById(scholarshipId);
     } catch (error: any) {
       return rejectWithValue(error.message);
     }

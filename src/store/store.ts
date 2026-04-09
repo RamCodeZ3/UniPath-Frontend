@@ -3,6 +3,7 @@ import authReducer from './auth/authSlice';
 import documeReducer from './document/documentSlice';
 import universityReducer from './university/universitySlice';
 import applicationReducer from './application/applicationSlice';
+import scholarshipReducer from './scholarship/scholarshipSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     document: documeReducer,
     university: universityReducer,
     application: applicationReducer,
+    scholarship: scholarshipReducer,
   },
 });
 

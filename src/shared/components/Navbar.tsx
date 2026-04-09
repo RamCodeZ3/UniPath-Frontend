@@ -21,6 +21,7 @@ export const Navbar = () => {
   const navLinks = [
     { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-home' },
     { label: 'Universidades', path: '/universities', icon: 'pi pi-building' },
+    { label: 'Becas', path: '/scholarships', icon: 'pi pi-graduation-cap' },
   ];
 
   const userMenuItems: MenuItem[] = [
