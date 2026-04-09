@@ -1,0 +1,1 @@
+export { ScholarshipGallery } from './ScholarshipGallery';

@@ -9,6 +9,8 @@ import Profile from './pages/profile';
 import { ProfileCreation } from './pages/profile-creation';
 import { UniversityGallery } from './pages/university-gallery';
 import { ApplicationDocuments } from './pages/application-documents';
+import { ScholarshipGallery } from './pages/scholarship-gallery';
+import { ScholarshipApplicationDocuments } from './pages/scholarship-application-documents';
 import ProtectedRoute from './shared/components/ProtectedRoute';
 import AuthListener from './shared/components/AuthListener';
 import { MainLayout } from './shared/components/MainLayout';
@@ -57,25 +59,33 @@ const routes = [
             path: '/dashboard',
             element: <Dashboard />,
           },
-          {
-            path: '/universities',
-            element: <UniversityGallery />,
-          },
-          {
-            path: '/documents',
-            element: <Documents />,
-          },
+           {
+             path: '/universities',
+             element: <UniversityGallery />,
+           },
+           {
+             path: '/scholarships',
+             element: <ScholarshipGallery />,
+           },
+           {
+             path: '/documents',
+             element: <Documents />,
+           },
            {
              path: '/profile',
              element: <Profile />,
            },
-           {
-             path: '/apply/:universityId',
-             element: <ApplicationDocuments />,
-           },
-         ],
-       },
-     ],
+            {
+              path: '/apply/:universityId',
+              element: <ApplicationDocuments />,
+            },
+            {
+              path: '/apply-scholarship/:scholarshipId',
+              element: <ScholarshipApplicationDocuments />,
+            },
+          ],
+        },
+      ],
    },
  ];
 
