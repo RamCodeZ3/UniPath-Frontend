@@ -256,9 +256,9 @@ export const confirmApplicationWithDocuments = async (
 
     const uploadedPaths = await Promise.all(uploadPromises);
 
-    const docRecords = newDocuments.map((doc) => ({
+    const docRecords = newDocuments.map((doc, idx) => ({
       profile_id: doc.profile_id,
-      document_path: doc.document_path,
+      document_path: uploadedPaths[idx],
       enrollment_requirement_id: doc.enrollment_requirement_id,
     }));
 
