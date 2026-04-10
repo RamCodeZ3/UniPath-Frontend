@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setUser, setProfile, setLoading, setEmailConfirmed } from '../../store/auth/authSlice';
+import { setUser, setProfile, setLoading, setEmailConfirmed } from '../../app/store/auth/authSlice';
 import { getSession, onAuthStateChange } from '../services/authService';
 import { getProfileWithStatus } from '../services/profileService';
 
-// Rutas donde NO se debe hacer redirección automática
 const AUTH_FLOW_ROUTES = [
   '/auth/callback',
   '/verify-email',
@@ -52,8 +51,6 @@ export default function AuthListener() {
         const nameFromMetadata = user.user_metadata?.name || user.user_metadata?.full_name || profile?.name || '';
         const provider = user.app_metadata?.provider;
         
-        // Google OAuth: step 1 (para confirmar/editar nombre)
-        // Email/Password: step 2 (ya ingresó nombre en registro)
         const step = provider === 'google' ? 1 : 2;
         
         navigate(`/profile/create?step=${step}&prefillName=${encodeURIComponent(nameFromMetadata)}`, { replace: true });
@@ -61,14 +58,12 @@ export default function AuthListener() {
       return;
     }
 
-    // Si tiene todo completo, redirigir a dashboard (excepto si ya está ahí)
     if (currentPath !== '/dashboard') {
       navigate('/dashboard', { replace: true });
     }
   };
 
   useEffect(() => {
-    // Solo inicializar una vez
     if (isInitialized.current) return;
     isInitialized.current = true;
 
@@ -87,8 +82,6 @@ export default function AuthListener() {
           dispatch(setProfile(null));
         }
         
-        // Solo redirigir automáticamente si estamos en la página de login (/)
-        // y el usuario ya tiene sesión
         if (currentPath === '/') {
           redirectBasedOnStatus(session.user, true);
         }
@@ -101,7 +94,6 @@ export default function AuthListener() {
         if (event === 'SIGNED_IN' && session) {
           dispatch(setUser(session.user));
           dispatch(setEmailConfirmed(!!session.user.email_confirmed_at));
-          // No hacer redirección aquí - dejar que las páginas individuales manejen su flujo
         }
         
         if (event === 'SIGNED_OUT') {

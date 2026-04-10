@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
-import type { RootState } from '../../store/store';
+import type { RootState } from '../../app/store/store';
 
 interface Props {
   children: React.ReactNode;
@@ -19,8 +19,6 @@ export default function ProtectedRoute({ children }: Props) {
     const nameFromMetadata = user.user_metadata?.name || user.user_metadata?.full_name || '';
     const provider = user.app_metadata?.provider;
     
-    // Google OAuth: step 1 (para confirmar/editar nombre)
-    // Email/Password: step 2 (ya ingresó nombre en registro)
     const step = provider === 'google' ? 1 : 2;
     
     const params = new URLSearchParams();

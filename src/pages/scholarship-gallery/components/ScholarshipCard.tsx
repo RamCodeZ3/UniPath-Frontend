@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import type { SB_Scholarship } from '../../../shared/models/scholarshipsModel';
-import type { RootState } from '../../../store/store';
+import type { RootState } from '../../../app/store/store';
 import { ApplyScholarshipButton } from './ApplyScholarshipButton';
 
 interface ScholarshipCardProps {

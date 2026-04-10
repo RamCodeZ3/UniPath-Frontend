@@ -1,3 +1,5 @@
+import type { UserDocument } from "./documentModel";
+
 export interface SB_ApplicationForAdmission {
   id: string;
   profile_id: string;
@@ -20,9 +22,6 @@ export interface ApplicationCheckResult {
 
 export type ApplicationStatus = 'pending' | 'accepted' | 'rejected' | 'withdrawn';
 
-/**
- * Documento asociado a una aplicación específica
- */
 export interface SB_ApplicationDocument {
   id: string;
   application_id: string;
@@ -35,4 +34,17 @@ export interface CreateApplicationDocumentPayload {
   application_id: string;
   document_id: string;
   enrollment_requirement_id: string;
+}
+
+export interface UniversityRequirement {
+  requirementId: string;
+  enrollmentReqId: string;
+  description: string;
+  notes?: string;
+  isStandard: boolean;
+}
+
+export interface RequirementStatus extends UniversityRequirement {
+  hasExistingDocument: boolean;
+  existingDocument?: UserDocument;
 }

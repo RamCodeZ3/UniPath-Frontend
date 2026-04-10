@@ -1,5 +1,5 @@
 import { RequirementItem } from './RequirementItem';
-import type { RequirementStatus } from '../../../shared/services/applicationDocumentService';
+import type { RequirementStatus } from '../../../shared/models/applicationModel';
 
 interface RequirementsListProps {
   title?: string;

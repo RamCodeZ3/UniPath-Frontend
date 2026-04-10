@@ -1,5 +1,6 @@
 import { DocumentUploadBox } from './DocumentUploadBox';
-import type { RequirementStatus, UserDocument } from '../../../shared/services/applicationDocumentService';
+import type { UserDocument } from '../../../shared/models/documentModel';
+import type { RequirementStatus } from '../../../shared/models/applicationModel';
 
 interface RequirementItemProps {
   requirement: RequirementStatus;
@@ -16,11 +17,10 @@ export const RequirementItem = ({
   onUpload,
   isLoading,
 }: RequirementItemProps) => {
-  // Extraer nombre del archivo del path
+  
   const getFileName = (path: string) => {
     const parts = path.split('/');
     const fileName = parts[parts.length - 1];
-    // Remover timestamp si existe (formato: timestamp-filename.ext)
     const match = fileName.match(/^\d+-(.+)$/);
     return match ? match[1] : fileName;
   };

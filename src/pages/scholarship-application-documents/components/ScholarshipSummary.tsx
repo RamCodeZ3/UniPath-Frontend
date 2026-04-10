@@ -9,14 +9,14 @@ interface ScholarshipSummaryProps {
   onBack: () => void;
 }
 
-export const ScholarshipSummary = ({
+export function ScholarshipSummary({
   completedCount,
   totalCount,
   canConfirm,
   isConfirming,
   onConfirm,
   onBack,
-}: ScholarshipSummaryProps) => {
+}: ScholarshipSummaryProps){
   const percentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   const isComplete = completedCount === totalCount && totalCount > 0;
 

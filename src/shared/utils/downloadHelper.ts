@@ -1,9 +1,4 @@
-/**
- * Descarga un archivo desde una URL pública
- * @param publicUrl - URL pública del archivo
- * @param fileName - Nombre del archivo para la descarga
- */
-export function downloadFile(publicUrl: string, fileName: string): void {
+export const downloadFile = (publicUrl: string, fileName: string) => {
   try {
     const link = document.createElement('a');
     link.href = publicUrl;
@@ -19,12 +14,7 @@ export function downloadFile(publicUrl: string, fileName: string): void {
   }
 }
 
-/**
- * Descarga un archivo desde un blob
- * @param blob - Blob del archivo
- * @param fileName - Nombre del archivo para la descarga
- */
-export function downloadBlob(blob: Blob, fileName: string): void {
+export const downloadBlob = (blob: Blob, fileName: string) => {
   try {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -43,11 +33,7 @@ export function downloadBlob(blob: Blob, fileName: string): void {
   }
 }
 
-/**
- * Abre un archivo en una nueva ventana
- * @param publicUrl - URL pública del archivo
- */
-export function openFileInNewTab(publicUrl: string): void {
+export const openFileInNewTab = (publicUrl: string) => {
   try {
     window.open(publicUrl, '_blank');
   } catch (error) {
@@ -56,11 +42,7 @@ export function openFileInNewTab(publicUrl: string): void {
   }
 }
 
-/**
- * Copia una URL al portapapeles
- * @param url - URL a copiar
- */
-export async function copyToClipboard(url: string): Promise<void> {
+export const copyToClipboard = async(url: string) => {
   try {
     await navigator.clipboard.writeText(url);
   } catch (error) {

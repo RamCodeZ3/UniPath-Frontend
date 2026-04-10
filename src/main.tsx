@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { PrimeReactProvider } from 'primereact/api';
-import { store } from './store/store';
+import { store } from './app/store/store';
 import routes from './routes';
 import './index.css';
 import 'primereact/resources/themes/lara-light-blue/theme.css';

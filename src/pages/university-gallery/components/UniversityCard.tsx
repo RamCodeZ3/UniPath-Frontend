@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import type { SB_University } from '../../../shared/models/universityModel';
-import type { RootState } from '../../../store/store';
+import type { RootState } from '../../../app/store/store';
 import { ApplyButton } from './ApplyButton';
 
 interface UniversityCardProps {

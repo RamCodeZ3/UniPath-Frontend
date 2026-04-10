@@ -5,10 +5,10 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
-import type { RootState } from '../../store/store';
+import type { RootState } from '../../app/store/store';
 import { signOut } from '../../shared/services/authService';
 import { updateProfile } from '../../shared/services/profileService';
-import { setProfile } from '../../store/auth/authSlice';
+import { setProfile } from '../../app/store/auth/authSlice';
 
 const CalendarIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
