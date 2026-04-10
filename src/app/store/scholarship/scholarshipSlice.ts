@@ -7,7 +7,7 @@ import type {
   ScholarshipRequirement,
   ScholarshipRequirementStatus,
   UserDocument,
-} from '../../shared/models/scholarshipsModel';
+} from '../../../shared/models/scholarshipsModel';
 
 import {
   fetchGetAllScholarships,

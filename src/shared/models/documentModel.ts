@@ -30,3 +30,17 @@ export interface DocumentRecommendationResponse {
 export interface DocumentRecommendationError {
     error: string;
 }
+
+export interface UserDocument {
+  id?: string;
+  profile_id: string;
+  document_path: string;
+  enrollment_requirement_id: string;
+}
+
+export interface NewDocumentToSave {
+  profile_id: string;
+  document_path: string;
+  enrollment_requirement_id: string;
+  file: File;
+}

@@ -92,7 +92,6 @@ export const DocumentUploadZone = ({
         return;
       }
 
-      // Verificar límite de archivos
       if (validFiles.length + currentFileCount >= maxFiles) {
         setValidationError(`Máximo de ${maxFiles} documentos alcanzado`);
         return;
@@ -110,7 +109,6 @@ export const DocumentUploadZone = ({
       onFilesSelected(validFiles);
     }
 
-    // Resetear input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

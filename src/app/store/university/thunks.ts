@@ -1,13 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getAllUniversities, getUniversityFullDetail } from "../../shared/services/universityService";
+import { getAllUniversities, getUniversityFullDetail } from "../../../shared/services/universityService";
 import {
   getAllUniversityOverviews,
   getUniversityOverviewById,
   createUniversityOverview,
   updateUniversityOverview,
   deleteUniversityOverview,
-} from "../../shared/services/universityOverviewsService";
-import type { SB_UniversityOverviews } from "../../shared/models/universityOverviewsModel";
+} from "../../../shared/services/universityOverviewsService";
+import type { SB_UniversityOverviews } from "../../../shared/models/universityOverviewsModel";
 
 
 export const fetchAllUniversitiesThunk = createAsyncThunk(

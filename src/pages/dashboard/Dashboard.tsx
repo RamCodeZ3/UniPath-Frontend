@@ -1,13 +1,13 @@
 import { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import type { AppDispatch, RootState } from '../../store/store';
-import { fetchGetUserApplications } from '../../store/application/thunks';
-import { fetchGetDocumentsByProfileId } from '../../store/document/thunks';
+import type { AppDispatch, RootState } from '../../app/store/store';
+import { fetchGetUserApplications } from '../../app/store/application/thunks';
+import { fetchGetDocumentsByProfileId } from '../../app/store/document/thunks';
 import {
   fetchGetAllScholarships,
   fetchGetScholarshipApplicationsByProfileId,
-} from '../../store/scholarship/thunk';
+} from '../../app/store/scholarship/thunk';
 import { KpiCards } from './components/KpiCards';
 import { NextActionCard } from './components/NextActionCard';
 import { ProgressHero } from './components/ProgressHero';

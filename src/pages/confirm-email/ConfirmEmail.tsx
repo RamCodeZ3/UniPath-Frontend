@@ -4,8 +4,8 @@ import { Button } from 'primereact/button';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProfileWithStatus } from '../../shared/services/profileService';
 import { getSession } from '../../shared/services/authService';
-import { setUser, setEmailConfirmed, setProfile } from '../../store/auth/authSlice';
-import type { RootState } from '../../store/store';
+import { setUser, setEmailConfirmed, setProfile } from '../../app/store/auth/authSlice';
+import type { RootState } from '../../app/store/store';
 
 const SuccessIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -36,26 +36,21 @@ export default function ConfirmEmail() {
   const [localUser, setLocalUser] = useState<any>(null);
   const storeUser = useSelector((state: RootState) => state.auth.user);
   
-  // Usar el user del store si existe, sino el local
   const user = storeUser || localUser;
   const userEmail = user?.email;
 
-  // Obtener la sesión al cargar (importante para cuando viene del link de confirmación)
   useEffect(() => {
     const initSession = async () => {
       try {
         const session = await getSession();
         if (session?.user) {
-          console.log('[ConfirmEmail] Sesión obtenida:', session.user.email);
           setLocalUser(session.user);
           dispatch(setUser(session.user));
           dispatch(setEmailConfirmed(true));
         } else {
-          console.log('[ConfirmEmail] No hay sesión, redirigiendo a /');
           window.location.href = '/';
         }
       } catch (error) {
-        console.error('[ConfirmEmail] Error obteniendo sesión:', error);
         window.location.href = '/';
       } finally {
         setIsLoading(false);
@@ -66,7 +61,6 @@ export default function ConfirmEmail() {
   }, [dispatch]);
 
   useEffect(() => {
-    // No iniciar countdown hasta que tengamos el email
     if (isLoading || !userEmail) return;
 
     const timer = setInterval(() => {
@@ -96,7 +90,6 @@ export default function ConfirmEmail() {
       return;
     }
 
-    // Verificar si el perfil existe Y está completo
     const { profile, isComplete } = await getProfileWithStatus(user.id).catch(() => ({ profile: null, isComplete: false }));
     dispatch(setProfile(profile));
 
@@ -112,7 +105,6 @@ export default function ConfirmEmail() {
     redirectToNextStep();
   };
 
-  // Mostrar loading mientras obtiene la sesión
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">

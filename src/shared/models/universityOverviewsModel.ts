@@ -1,4 +1,4 @@
-export interface  SB_UniversityOverviews{
+export interface SB_UniversityOverviews{
     id: string;
     comment: string;
     profile_id: string;

@@ -2,16 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Toast } from 'primereact/toast';
-import type { RootState } from '../../store/store';
+import type { RootState } from '../../app/store/store';
 import {
   getAllApplicationRequirements,
   getUserDocuments,
   matchRequirementsWithDocuments,
   createApplicationWithDocuments,
-  type RequirementStatus,
 } from '../../shared/services/applicationDocumentService';
+import type { RequirementStatus } from '../../shared/models/applicationModel';
 import { recommendDocuments } from '../../shared/services/geminiService';
-import supabase from '../../config/supabase/supabase';
+import { uploadDocument as uploadDocumentService, createDocument as createDocumentService } from '../../shared/services/documentServices';
 import { UniversityHeader } from './components/UniversityHeader';
 import { RequirementsList } from './components/RequirementsList';
 import { PaymentSummary } from './components/PaymentSummary';
@@ -40,10 +40,8 @@ export default function ApplicationDocuments() {
   const location = useLocation();
   const toastRef = useRef(null);
 
-  // Redux state
   const { profile } = useSelector((state: RootState) => state.auth);
 
-  // Local state
   const [state, setState] = useState<ApplicationDocumentsState>({
     standardRequirements: [],
     additionalRequirements: [],
@@ -62,11 +60,8 @@ export default function ApplicationDocuments() {
 
   const universityName = (location.state as any)?.universityName || 'Universidad';
 
-  // Cargar requerimientos y documentos existentes
   useEffect(() => {
     const loadData = async () => {
-      console.log('[ApplicationDocuments] universityId:', universityId);
-      console.log('[ApplicationDocuments] profile:', profile);
 
       if (!universityId || !profile?.id) {
         const toastRef_current = toastRef.current as any;
@@ -84,21 +79,11 @@ export default function ApplicationDocuments() {
       try {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-        // Obtener requerimientos estándar y adicionales de la universidad
         const { standard, additional } = await getAllApplicationRequirements(universityId);
-        console.log('[ApplicationDocuments] Standard requirements:', standard);
-        console.log('[ApplicationDocuments] Additional requirements:', additional);
-
-        // Obtener documentos existentes del usuario
         const existingDocs = await getUserDocuments(profile.id);
-        console.log('[ApplicationDocuments] Existing docs:', existingDocs);
 
-        // Hacer matching para ambos tipos
         const matchedStandard = matchRequirementsWithDocuments(standard, existingDocs);
         const matchedAdditional = matchRequirementsWithDocuments(additional, existingDocs);
-        
-        console.log('[ApplicationDocuments] Matched standard:', matchedStandard);
-        console.log('[ApplicationDocuments] Matched additional:', matchedAdditional);
 
         setState((prev) => ({
           ...prev,
@@ -107,24 +92,21 @@ export default function ApplicationDocuments() {
           isLoading: false,
         }));
 
-        // Cargar recomendación de Gemini automáticamente
         try {
           const result = await recommendDocuments(profile.id, universityId);
           if (result?.error) {
             setRecommendationError(result.error);
-            console.error('[ApplicationDocuments] Gemini API error:', result.error);
           } else {
             setRecommendation(result);
           }
         } catch (geminiError) {
           const errorMessage = geminiError instanceof Error ? geminiError.message : 'Error desconocido';
           setRecommendationError(errorMessage);
-          console.error('[ApplicationDocuments] Gemini recommendation error:', errorMessage);
+
         } finally {
           setRecommendationLoading(false);
         }
       } catch (error) {
-        console.error('[ApplicationDocuments] Error:', error);
         const errorMsg = error instanceof Error ? error.message : 'Error desconocido';
         setState((prev) => ({
           ...prev,
@@ -147,7 +129,6 @@ export default function ApplicationDocuments() {
     loadData();
   }, [universityId, profile?.id]);
 
-  // Función helper para actualizar un requerimiento en el estado
   const updateRequirementInState = (
     requirementId: string,
     updateFn: (req: RequirementStatus) => RequirementStatus
@@ -163,7 +144,6 @@ export default function ApplicationDocuments() {
     }));
   };
 
-  // Encontrar requerimiento en ambas listas
   const findRequirement = (requirementId: string): RequirementStatus | undefined => {
     return (
       state.standardRequirements.find((r) => r.requirementId === requirementId) ||
@@ -171,13 +151,11 @@ export default function ApplicationDocuments() {
     );
   };
 
-  // Manejar subida de archivo
   const handleFileUpload = async (requirementId: string, file: File) => {
     if (!profile?.id) {
       return;
     }
 
-    // Validar tipo de archivo
     if (!ALLOWED_TYPES.includes(file.type)) {
       const toastRef_current = toastRef.current as any;
       if (toastRef_current) {
@@ -191,7 +169,6 @@ export default function ApplicationDocuments() {
       return;
     }
 
-    // Validar tamaño de archivo
     if (file.size > MAX_FILE_SIZE) {
       const toastRef_current = toastRef.current as any;
       if (toastRef_current) {
@@ -208,42 +185,21 @@ export default function ApplicationDocuments() {
     try {
       setUploadingRequirementId(requirementId);
 
-      // Encontrar el requerimiento
       const requirement = findRequirement(requirementId);
       if (!requirement) {
         throw new Error('Requerimiento no encontrado');
       }
 
-      // 1. SUBIR ARCHIVO A STORAGE INMEDIATAMENTE
       const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const filePath = `${profile.id}/${Date.now()}-${cleanName}`;
-      const { error: uploadError } = await supabase.storage
-        .from('documents_users')
-        .upload(filePath, file, { upsert: false });
+      const fileNameToUpload = `${Date.now()}-${cleanName}`;
+      const publicUrl = await uploadDocumentService(profile.id, file, fileNameToUpload);
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      const savedDoc = await createDocumentService({
+        profile_id: profile.id,
+        document_path: publicUrl,
+        enrollment_requirement_id: requirement.enrollmentReqId,
+      });
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const publicUrl = `${supabaseUrl}/storage/v1/object/public/documents_users/${filePath}`;
-
-      // 2. GUARDAR EN TABLA DOCUMENTS (se asocia al perfil del usuario)
-      const { data: savedDoc, error: saveError } = await supabase
-        .from('documents')
-        .insert({
-          profile_id: profile.id,
-          document_path: publicUrl,
-          enrollment_requirement_id: requirement.enrollmentReqId,
-        })
-        .select('id')
-        .single();
-
-      if (saveError) {
-        throw saveError;
-      }
-
-      // 3. ACTUALIZAR UI: marcar como completado
       updateRequirementInState(requirementId, (req) => ({
         ...req,
         hasExistingDocument: true,
@@ -279,7 +235,6 @@ export default function ApplicationDocuments() {
     }
   };
 
-  // Manejar confirmación de aplicación
   const handleConfirmApplication = async () => {
     if (!universityId || !profile?.id) {
       return;
@@ -288,16 +243,17 @@ export default function ApplicationDocuments() {
     try {
       setState((prev) => ({ ...prev, isConfirming: true }));
 
-      // Recopilar todos los documentos con sus IDs
       const allRequirements = [...state.standardRequirements, ...state.additionalRequirements];
       const documentsToLink = allRequirements
-        .filter((req) => req.hasExistingDocument && req.existingDocument?.id)
-        .map((req) => ({
-          document_id: req.existingDocument!.id,
-          enrollment_requirement_id: req.enrollmentReqId,
-        }));
+      .flatMap((req) =>
+        req.hasExistingDocument && req.existingDocument?.id
+          ? [{
+              document_id: req.existingDocument.id,
+              enrollment_requirement_id: req.enrollmentReqId,
+            }]
+          : []
+      );
 
-      // Crear aplicación con documentos vinculados
       await createApplicationWithDocuments(profile.id, universityId, documentsToLink);
 
       const toastRef_current = toastRef.current as any;
@@ -310,7 +266,6 @@ export default function ApplicationDocuments() {
         });
       }
 
-      // Navegar de vuelta
       setTimeout(() => {
         navigate('/universities', { replace: true });
       }, 2000);
@@ -334,25 +289,21 @@ export default function ApplicationDocuments() {
     }
   };
 
-  // Manejar ir atrás
   const handleBackWithWarning = () => {
     navigate('/universities');
   };
 
-  // Descartar cambios y ir atrás
   const handleDiscardChanges = () => {
     setShowDiscardModal(false);
     navigate('/universities');
   };
 
-  // Calcular completados (estándar + adicionales)
   const allRequirements = [...state.standardRequirements, ...state.additionalRequirements];
   const completedCount = allRequirements.filter((r) => r.hasExistingDocument).length;
   const totalCount = allRequirements.length;
   const standardCompleted = state.standardRequirements.filter((r) => r.hasExistingDocument).length;
   const standardTotal = state.standardRequirements.length;
   
-  // Solo puede confirmar si tiene TODOS los documentos estándar + todos los adicionales
   const canConfirm = completedCount === totalCount && totalCount > 0;
   const hasUnsavedChanges = false;
 
@@ -390,10 +341,9 @@ export default function ApplicationDocuments() {
       <Toast ref={toastRef} />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
+
         <UniversityHeader universityName={universityName} onBack={handleBackWithWarning} />
 
-        {/* Recomendación de Gemini */}
         {!state.isLoading && (
           <div className="mt-6">
             <DocumentRecommendationCard
@@ -420,7 +370,6 @@ export default function ApplicationDocuments() {
               totalCount={standardTotal}
             />
 
-            {/* Documentos Adicionales (solo si hay) */}
             {state.additionalRequirements.length > 0 && (
               <RequirementsList
                 title="Documentos Adicionales"
@@ -434,7 +383,6 @@ export default function ApplicationDocuments() {
             )}
           </div>
 
-          {/* Columna 2: Resumen */}
           <div className="lg:col-span-1">
             <PaymentSummary
               completedCount={completedCount}

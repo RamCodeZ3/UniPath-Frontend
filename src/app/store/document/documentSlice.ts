@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { SB_Documents, DocumentRecommendationResponse } from '../../shared/models/documentModel';
+import type { SB_Documents, DocumentRecommendationResponse } from '../../../shared/models/documentModel';
 import {
     fetchGetDocumentsByProfileId,
     fetchUploadDocument,

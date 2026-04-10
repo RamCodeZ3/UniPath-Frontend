@@ -7,11 +7,11 @@ interface ScholarshipRequirementsListProps {
   uploadingRequirementId: string | null;
 }
 
-export const ScholarshipRequirementsList = ({
+export function ScholarshipRequirementsList({
   requirements,
   onFileUpload,
   uploadingRequirementId,
-}: ScholarshipRequirementsListProps) => {
+}: ScholarshipRequirementsListProps){
   const completedCount = requirements.filter((r) => r.hasExistingDocument).length;
   const totalCount = requirements.length;
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;

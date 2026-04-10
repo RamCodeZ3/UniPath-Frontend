@@ -5,12 +5,7 @@ import type {
   ApplicationStatus,
 } from '../models/applicationModel';
 
-/**
- * Crea una nueva solicitud de admisión a una universidad
- * @param profileId - ID del perfil del usuario
- * @param universityId - ID de la universidad
- * @returns La aplicación creada
- */
+
 export const createApplication = async (
   profileId: string,
   universityId: string
@@ -41,11 +36,6 @@ export const createApplication = async (
   return data;
 };
 
-/**
- * Obtiene todas las solicitudes de un usuario
- * @param profileId - ID del perfil del usuario
- * @returns Lista de aplicaciones
- */
 export const getApplicationsByProfileId = async (
   profileId: string
 ): Promise<SB_ApplicationForAdmission[]> => {
@@ -63,12 +53,6 @@ export const getApplicationsByProfileId = async (
   return data || [];
 };
 
-/**
- * Verifica si un usuario ya aplicó a una universidad específica
- * @param profileId - ID del perfil del usuario
- * @param universityId - ID de la universidad
- * @returns true si ya aplicó, false en caso contrario
- */
 export const isUserAppliedToUniversity = async (
   profileId: string,
   universityId: string
@@ -89,11 +73,6 @@ export const isUserAppliedToUniversity = async (
   return (count ?? 0) > 0;
 };
 
-/**
- * Obtiene una aplicación específica por ID
- * @param applicationId - ID de la aplicación
- * @returns La aplicación
- */
 export const getApplicationById = async (
   applicationId: string
 ): Promise<SB_ApplicationForAdmission> => {
@@ -116,12 +95,6 @@ export const getApplicationById = async (
   return data;
 };
 
-/**
- * Actualiza el estado de una aplicación
- * @param applicationId - ID de la aplicación
- * @param status - Nuevo estado
- * @returns La aplicación actualizada
- */
 export const updateApplicationStatus = async (
   applicationId: string,
   status: ApplicationStatus
@@ -147,11 +120,6 @@ export const updateApplicationStatus = async (
   return data;
 };
 
-/**
- * Obtiene el conteo de aplicaciones de un usuario por estado
- * @param profileId - ID del perfil del usuario
- * @returns Objeto con conteo de aplicaciones por estado
- */
 export const getApplicationCountByStatus = async (
   profileId: string
 ): Promise<Record<ApplicationStatus, number>> => {
@@ -182,11 +150,6 @@ export const getApplicationCountByStatus = async (
   return counts;
 };
 
-/**
- * Retira una solicitud de admisión
- * @param applicationId - ID de la aplicación
- * @returns La aplicación actualizada
- */
 export const withdrawApplication = async (
   applicationId: string
 ): Promise<SB_ApplicationForAdmission> => {

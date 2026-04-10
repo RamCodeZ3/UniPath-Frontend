@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { useSelector } from 'react-redux';
 import { resendVerificationEmail } from '../../shared/services/authService';
-import type { RootState } from '../../store/store';
+import type { RootState } from '../../app/store/store';
 
 const MailIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

@@ -43,7 +43,6 @@ export const ApplyScholarshipButton = ({
         const applied = await isUserAppliedToScholarship(profileId, scholarshipId);
         setIsAlreadyApplied(applied);
       } catch (error) {
-        console.warn('[ApplyScholarshipButton] Error checking if applied:', error);
         setIsAlreadyApplied(false);
       } finally {
         setIsChecking(false);

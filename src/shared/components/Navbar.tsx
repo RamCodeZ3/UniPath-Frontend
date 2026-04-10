@@ -3,10 +3,10 @@ import { Menu } from 'primereact/menu';
 import { signOut } from '../services/authService';
 import { useSelector } from 'react-redux';
 import { useRef } from 'react';
-import type { RootState } from '../../store/store';
+import type { RootState } from '../..//app/store/store';
 import type { MenuItem } from 'primereact/menuitem';
 
-export const Navbar = () => {
+export function Navbar(){
   const navigate = useNavigate();
   const { profile, user } = useSelector((state: RootState) => state.auth);
   const menu = useRef<Menu>(null);
@@ -88,7 +88,7 @@ export const Navbar = () => {
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          
           <NavLink to="/dashboard" className="flex items-center gap-3 no-underline">
             <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
               <img
@@ -100,7 +100,6 @@ export const Navbar = () => {
             <span className="text-xl font-bold text-gray-900">UniPath</span>
           </NavLink>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <NavLink
@@ -120,7 +119,6 @@ export const Navbar = () => {
             ))}
           </nav>
 
-          {/* User Actions */}
           <div className="flex items-center gap-3">
             <Menu 
               model={userMenuItems} 
@@ -155,7 +153,6 @@ export const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile Navigation (Simple version) */}
       <nav className="md:hidden border-t border-gray-50 flex items-center justify-around py-2 bg-white/80 backdrop-blur-md">
         {navLinks.map((link) => (
           <NavLink
