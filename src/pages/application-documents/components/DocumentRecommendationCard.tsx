@@ -33,6 +33,27 @@ const parseAnswer = (raw: string): Section[] => {
     current = null;
   };
 
+  const itemPatterns = [
+    /^- (.+)/,
+    /^\* (.+)/,
+    /^(\d+[\.\)]\s*)(.+)/,
+    /^[-*]\s+\*\*(.+?)\*\*(.*)/,
+  ];
+
+  const isInvalidDocText = (text: string): boolean => {
+    const lower = text.toLowerCase();
+    return (
+      lower.includes('el documento que subiste') ||
+      lower.includes('no corresponde a ninguno') ||
+      lower.includes('no es válido') ||
+      lower.includes('no está contemplado') ||
+      lower.includes('ticket_') ||
+      /\.png$/i.test(text) ||
+      /\.jpg$/i.test(text) ||
+      /\.pdf$/i.test(text)
+    );
+  };
+
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
@@ -40,26 +61,47 @@ const parseAnswer = (raw: string): Section[] => {
     if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
       flush();
       const title = trimmed.replace(/\*\*/g, '');
-      const isMissing = title.toLowerCase().includes('faltante');
+      const isDocumentsMissing = title.toLowerCase().includes('documentos faltantes') ||
+                                 title.toLowerCase().includes('documentos que faltan');
+      const isEstadoGeneral = title.toLowerCase().includes('estado general');
       const isText =
         title.toLowerCase().includes('recomendaci') ||
         title.toLowerCase().includes('nota');
 
+      let sectionType: SectionType = 'list';
+      if (isDocumentsMissing) {
+        sectionType = 'chips';
+      } else if (isEstadoGeneral) {
+        sectionType = 'text';
+      } else if (isText) {
+        sectionType = 'text';
+      }
+
       current = {
-        type: isMissing ? 'chips' : isText ? 'text' : 'list',
+        type: sectionType,
         title,
         items: [],
       };
       continue;
     }
 
-    if (trimmed.startsWith('-') && current) {
-      const item = trimmed.replace(/^-\s*/, '').replace(/\*\*/g, '');
-      current.items = [...(current.items ?? []), item];
-      continue;
+    let matched = false;
+    for (const pattern of itemPatterns) {
+      const match = trimmed.match(pattern);
+      if (match) {
+        const item = match[match.length - 1].replace(/\*\*/g, '').trim();
+        if (item && current) {
+          current.items = [...(current.items ?? []), item];
+          matched = true;
+          break;
+        }
+      }
     }
 
-    if (trimmed && current) {
+    if (!matched && trimmed && current) {
+      if (current.type === 'chips' && isInvalidDocText(trimmed)) {
+        continue;
+      }
       textBuffer.push(trimmed);
     }
   }
@@ -142,6 +184,10 @@ export const DocumentRecommendationCard = ({
               </div>
             )}
 
+            {section.type === 'chips' && section.text && (
+              <p className="text-gray-700 leading-relaxed mt-2">{section.text}</p>
+            )}
+
             {section.type === 'list' && (section.items?.length ?? 0) > 0 && (
               <ul className="list-disc list-inside space-y-1 text-gray-700">
                 {section.items!.map((item, j) => (
@@ -152,6 +198,14 @@ export const DocumentRecommendationCard = ({
 
             {section.type === 'text' && section.text && (
               <p className="text-gray-700 leading-relaxed">{section.text}</p>
+            )}
+
+            {section.type === 'text' && (section.items?.length ?? 0) > 0 && (
+              <ul className="list-disc list-inside space-y-1 text-gray-700">
+                {section.items!.map((item, j) => (
+                  <li key={j}>{item}</li>
+                ))}
+              </ul>
             )}
           </div>
         ))}
