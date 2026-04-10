@@ -26,10 +26,10 @@ export const RequirementsList = ({
     : 0;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
       {/* Header con título y progreso */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
           <h2 className="text-lg font-bold text-gray-900">{title}</h2>
           {showProgress && (
             <span className="text-sm font-medium text-gray-600">

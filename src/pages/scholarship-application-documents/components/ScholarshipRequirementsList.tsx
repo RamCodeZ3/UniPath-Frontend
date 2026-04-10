@@ -17,9 +17,9 @@ export function ScholarshipRequirementsList({
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
           <h2 className="text-lg font-bold text-gray-900">Requisitos de beca</h2>
           <span className="text-sm font-medium text-gray-600">
             {completedCount}/{totalCount} completados

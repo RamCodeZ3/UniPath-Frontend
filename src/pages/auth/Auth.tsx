@@ -181,7 +181,7 @@ export default function Auth() {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-gray-50 relative overflow-hidden">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 py-6 sm:py-8 bg-gray-50 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <svg className="absolute -top-10 -right-10 w-40 h-40 text-blue-100/50" viewBox="0 0 100 100">
             <circle cx="50" cy="50" r="45" fill="currentColor"/>
@@ -231,7 +231,7 @@ export default function Auth() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className={`space-y-3 transition-all duration-200 ease-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+          <form onSubmit={handleSubmit} className={`space-y-3.5 transition-all duration-200 ease-out ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
             {!isLogin && (
               <div className="space-y-1">
                 <label htmlFor="name" className="text-sm font-medium text-gray-700">
@@ -245,7 +245,7 @@ export default function Auth() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Juan Pérez"
-                    className={`w-full py-2 text-sm ${errors.name ? 'p-invalid' : ''}`}
+                    className={`w-full min-h-11 py-2 text-sm ${errors.name ? 'p-invalid' : ''}`}
                   />
                 </IconField>
                 {errors.name && (
@@ -269,7 +269,7 @@ export default function Auth() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tucorreo@ejemplo.com"
-                  className={`w-full py-2 text-sm ${errors.email ? 'p-invalid' : ''}`}
+                    className={`w-full min-h-11 py-2 text-sm ${errors.email ? 'p-invalid' : ''}`}
                 />
               </IconField>
               {errors.email && (
@@ -293,7 +293,7 @@ export default function Auth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Escribe tu contraseña"
-                    className={`w-full py-2 text-sm pr-10 ${errors.password ? 'p-invalid' : ''}`}
+                    className={`w-full min-h-11 py-2 text-sm pr-10 ${errors.password ? 'p-invalid' : ''}`}
                   />
                 </IconField>
                 <button
@@ -326,7 +326,7 @@ export default function Auth() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Repite tu contraseña"
-                      className={`w-full py-2 text-sm pr-10 ${errors.confirmPassword ? 'p-invalid' : ''}`}
+                    className={`w-full min-h-11 py-2 text-sm pr-10 ${errors.confirmPassword ? 'p-invalid' : ''}`}
                     />
                   </IconField>
                   <button
@@ -358,7 +358,7 @@ export default function Auth() {
               type="submit"
               label={isLogin ? 'Entrar' : 'Crear cuenta'}
               loading={isSubmitting}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 border-none text-white font-semibold py-2 text-sm rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 border-none text-white font-semibold min-h-11 py-2 text-sm rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
             />
 
             <div className="text-center text-xs text-gray-500 pt-2">
@@ -400,7 +400,7 @@ export default function Auth() {
           <button
             type="button"
             onClick={handleGoogleAuth}
-            className="w-full flex items-center justify-center gap-2 py-1.5 px-3 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors text-sm cursor-pointer"
+            className="w-full min-h-11 flex items-center justify-center gap-2 py-1.5 px-3 border border-gray-300 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors text-sm cursor-pointer"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

@@ -176,9 +176,9 @@ export function UniversityGallery(){
 
   return (
     <div className="bg-gray-50">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Título de página */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Explora universidades
           </h1>
@@ -219,6 +219,14 @@ export function UniversityGallery(){
                     onClearFilters={handleClearFilters}
                     loading={loading}
                   />
+                  <div className="pt-3">
+                    <Button
+                      label="Aplicar filtros"
+                      icon="pi pi-check"
+                      className="w-full"
+                      onClick={() => setMobileFiltersOpen(false)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -249,6 +257,14 @@ export function UniversityGallery(){
                   </>
                 )}
               </p>
+              <Button
+                icon="pi pi-filter"
+                label="Filtros"
+                className="lg:hidden"
+                outlined
+                size="small"
+                onClick={() => setMobileFiltersOpen(true)}
+              />
             </div>
 
             {/* Error state */}

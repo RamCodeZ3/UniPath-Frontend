@@ -341,7 +341,6 @@ export default function ApplicationDocuments() {
       <Toast ref={toastRef} />
 
       <main className="max-w-4xl mx-auto px-4 py-8">
-
         <UniversityHeader universityName={universityName} onBack={handleBackWithWarning} />
 
         {!state.isLoading && (
@@ -356,7 +355,7 @@ export default function ApplicationDocuments() {
         )}
 
         {/* Contenido Principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-6 sm:mt-8">
           {/* Columna 1: Lista de Requerimientos */}
           <div className="lg:col-span-2 space-y-6">
             {/* Documentos Estándar */}

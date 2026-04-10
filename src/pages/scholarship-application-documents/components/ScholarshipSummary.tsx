@@ -21,7 +21,7 @@ export function ScholarshipSummary({
   const isComplete = completedCount === totalCount && totalCount > 0;
 
   return (
-    <div className="sticky top-20 bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 lg:sticky lg:top-20">
       <h3 className="text-lg font-bold text-gray-900 mb-1">Resumen de Postulacion</h3>
       <p className="text-sm text-gray-500 mb-4">Verifica tu avance antes de enviar</p>
 

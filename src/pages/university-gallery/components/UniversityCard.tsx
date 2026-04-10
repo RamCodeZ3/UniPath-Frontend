@@ -60,7 +60,7 @@ export const UniversityCard = ({ university, onClick }: UniversityCardProps) => 
   return (
     <div
       onClick={() => onClick(university)}
-      className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group flex flex-col"
+      className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group flex flex-col"
     >
       {/* Header con logo y badges */}
       <div className="flex items-start justify-between mb-4">

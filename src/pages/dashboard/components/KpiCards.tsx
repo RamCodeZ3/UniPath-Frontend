@@ -74,12 +74,12 @@ export const KpiCards = ({
   ];
 
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
       {items.map((item) => {
         const tone = toneMap[item.tone];
 
         return (
-          <article key={item.label} className={`border rounded-2xl p-4 ${tone.bg}`}>
+          <article key={item.label} className={`border rounded-2xl p-3.5 sm:p-4 ${tone.bg}`}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs uppercase tracking-wide font-semibold text-gray-600">{item.label}</p>
               <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${tone.icon}`}>

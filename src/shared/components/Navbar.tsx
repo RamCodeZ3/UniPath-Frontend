@@ -18,10 +18,17 @@ export function Navbar(){
     navigate('/');
   };
 
-  const navLinks = [
+  const desktopNavLinks = [
     { label: 'Dashboard', path: '/dashboard', icon: 'pi pi-home' },
     { label: 'Universidades', path: '/universities', icon: 'pi pi-building' },
     { label: 'Becas', path: '/scholarships', icon: 'pi pi-graduation-cap' },
+  ];
+
+  const mobileTabLinks = [
+    { label: 'Inicio', path: '/dashboard', icon: 'pi pi-home' },
+    { label: 'Universidades', path: '/universities', icon: 'pi pi-building' },
+    { label: 'Becas', path: '/scholarships', icon: 'pi pi-graduation-cap' },
+    { label: 'Perfil', path: '/profile', icon: 'pi pi-user' },
   ];
 
   const userMenuItems: MenuItem[] = [
@@ -96,9 +103,6 @@ export function Navbar(){
                 alt="UniPath"
                 className="w-full h-full object-contain"
               />
-            </div>
-            <span className="text-xl font-bold text-gray-900">UniPath</span>
-          </NavLink>
 
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
@@ -113,11 +117,9 @@ export function Navbar(){
                   }`
                 }
               >
-                <i className={`${link.icon} text-xs`} />
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
+                <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shadow-sm group-hover:scale-105 transition-transform duration-200">
+                  {getInitials(userName)}
+                </div>
 
           <div className="flex items-center gap-3">
             <Menu 
@@ -171,6 +173,6 @@ export function Navbar(){
           </NavLink>
         ))}
       </nav>
-    </header>
+    </>
   );
 };
