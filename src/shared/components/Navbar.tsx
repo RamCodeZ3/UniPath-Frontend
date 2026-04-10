@@ -3,7 +3,7 @@ import { Menu } from 'primereact/menu';
 import { signOut } from '../services/authService';
 import { useSelector } from 'react-redux';
 import { useRef } from 'react';
-import type { RootState } from '../../store/store';
+import type { RootState } from '../..//app/store/store';
 import type { MenuItem } from 'primereact/menuitem';
 
 export function Navbar(){

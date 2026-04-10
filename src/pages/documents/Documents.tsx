@@ -4,12 +4,12 @@ import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
-import type { RootState, AppDispatch } from '../../store/store';
+import type { RootState, AppDispatch } from '../../app/store/store';
 import {
   fetchGetDocumentsByProfileId,
   fetchUploadDocument,
   fetchDeleteDocument,
-} from '../../store/document/thunks';
+} from '../../app/store/document/thunks';
 import { DocumentUploadZone } from './components/DocumentUploadZone';
 import { DocumentList } from './components/DocumentList';
 import { downloadFile } from '../../shared/utils/downloadHelper';

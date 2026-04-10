@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Toast } from 'primereact/toast';
-import type { RootState, AppDispatch } from '../../../store/store';
-import { fetchCheckIfApplied } from '../../../store/application/thunks';
+import type { RootState, AppDispatch } from '../../../app/store/store';
+import { fetchCheckIfApplied } from '../../../app/store/application/thunks';
 
 interface ApplyButtonProps {
   universityId: string;

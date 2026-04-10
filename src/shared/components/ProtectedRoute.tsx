@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
-import type { RootState } from '../../store/store';
+import type { RootState } from '../../app/store/store';
 
 interface Props {
   children: React.ReactNode;

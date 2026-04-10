@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { Toast } from 'primereact/toast';
-import type { AppDispatch } from '../../store/store';
-import { fetchUploadDocument, fetchAddDocument } from '../../store/document/thunks';
-import type { RootState } from '../../store/store';
+import type { AppDispatch } from '../../app/store/store';
+import { fetchUploadDocument, fetchAddDocument } from '../../app/store/document/thunks';
+import type { RootState } from '../../app/store/store';
 import type {
   ScholarshipRequirementStatus,
 } from '../../shared/models/scholarshipsModel';

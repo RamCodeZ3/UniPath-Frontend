@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { SB_UniversityOverviews } from '../../shared/models/universityOverviewsModel';
+import type { SB_UniversityOverviews } from '../../../shared/models/universityOverviewsModel';
 import {
     fetchAllUniversitiesThunk,
     fetchUniversityFullDetailThunk,

@@ -5,7 +5,7 @@ import { Button } from 'primereact/button';
 import type { UniversityWithDetails } from '../../../shared/models/universityModel';
 import type { SB_UniversityOverviews } from '../../../shared/models/universityOverviewsModel';
 import { createUniversityOverview } from '../../../shared/services/universityOverviewsService';
-import type { RootState } from '../../../store/store';
+import type { RootState } from '../../../app/store/store';
 import { ApplyButton } from './ApplyButton';
 
 interface UniversityDetailModalProps {

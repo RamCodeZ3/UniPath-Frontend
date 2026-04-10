@@ -4,9 +4,9 @@ import {
     createDocument,
     deleteDocument,
     uploadDocument
-} from '../../shared/services/documentServices';
-import { recommendDocuments } from '../../shared/services/geminiService';
-import type { SB_Documents } from '../../shared/models/documentModel';
+} from '../../../shared/services/documentServices';
+import { recommendDocuments } from '../../../shared/services/geminiService';
+import type { SB_Documents } from '../../../shared/models/documentModel';
 
 
 export const fetchGetDocumentsByProfileId = createAsyncThunk(

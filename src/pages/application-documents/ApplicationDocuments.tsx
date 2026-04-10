@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Toast } from 'primereact/toast';
-import type { RootState } from '../../store/store';
+import type { RootState } from '../../app/store/store';
 import {
   getAllApplicationRequirements,
   getUserDocuments,

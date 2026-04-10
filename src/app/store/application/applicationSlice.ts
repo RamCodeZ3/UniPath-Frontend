@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { SB_ApplicationForAdmission, ApplicationCheckResult } from '../../shared/models/applicationModel';
+import type { SB_ApplicationForAdmission, ApplicationCheckResult } from '../../../shared/models/applicationModel';
 import {
   fetchCreateApplication,
   fetchGetUserApplications,

@@ -6,14 +6,14 @@ import type {
   ScholarshipRequirementStatus,
   NewScholarshipDocumentToSave,
   UserDocument,
-} from '../../shared/models/scholarshipsModel';
-import type { SB_Scholarship } from '../../shared/models/scholarshipsModel';
+} from '../../../shared/models/scholarshipsModel';
+import type { SB_Scholarship } from '../../../shared/models/scholarshipsModel';
 
 import {
   getAllScholarships,
   getScholarshipById,
   getScholarshipFullDetail,
-} from '../../shared/services/scholarshipService';
+} from '../../../shared/services/scholarshipService';
 
 import {
   createScholarshipApplication,
@@ -30,7 +30,7 @@ import {
   createScholarshipApplicationWithDocuments,
   confirmScholarshipApplicationWithDocuments,
   getScholarshipApplicationDocuments,
-} from '../../shared/services/applicationScholarshipService';
+} from '../../../shared/services/applicationScholarshipService';
 
 
 export const fetchGetAllScholarships = createAsyncThunk<SB_Scholarship[], void>(

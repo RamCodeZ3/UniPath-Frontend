@@ -9,8 +9,8 @@ import { Button } from 'primereact/button';
 import { profileSchema, type ProfileFormData } from './profile.schema';
 import { createProfile, getProfile } from '../../shared/services/profileService';
 import { getSession } from '../../shared/services/authService';
-import { setUser, setEmailConfirmed } from '../../store/auth/authSlice';
-import type { RootState } from '../../store/store';
+import { setUser, setEmailConfirmed } from '../../app/store/auth/authSlice';
+import type { RootState } from '../../app/store/store';
 
 const sexOptions = [
   { label: 'Masculino', value: 'masculino' },

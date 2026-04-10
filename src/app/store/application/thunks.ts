@@ -3,8 +3,8 @@ import {
   createApplication,
   getApplicationsByProfileId,
   isUserAppliedToUniversity,
-} from '../../shared/services/applicationService';
-import type { ApplicationCheckResult } from '../../shared/models/applicationModel';
+} from '../../../shared/services/applicationService';
+import type { ApplicationCheckResult } from '../../../shared/models/applicationModel';
 
 export const fetchCreateApplication = createAsyncThunk(
   'application/fetchCreateApplication',

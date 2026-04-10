@@ -4,8 +4,8 @@ import { Button } from 'primereact/button';
 import { useSelector, useDispatch } from 'react-redux';
 import { getProfileWithStatus } from '../../shared/services/profileService';
 import { getSession } from '../../shared/services/authService';
-import { setUser, setEmailConfirmed, setProfile } from '../../store/auth/authSlice';
-import type { RootState } from '../../store/store';
+import { setUser, setEmailConfirmed, setProfile } from '../../app/store/auth/authSlice';
+import type { RootState } from '../../app/store/store';
 
 const SuccessIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

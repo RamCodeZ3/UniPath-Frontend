@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setUser, setProfile, setLoading, setEmailConfirmed } from '../../store/auth/authSlice';
+import { setUser, setProfile, setLoading, setEmailConfirmed } from '../../app/store/auth/authSlice';
 import { getSession, onAuthStateChange } from '../services/authService';
 import { getProfileWithStatus } from '../services/profileService';
 
