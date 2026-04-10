@@ -9,7 +9,7 @@ import {
 
 export interface ApplicationState {
   applications: SB_ApplicationForAdmission[];
-  userApplications: Record<string, boolean>; // universityId -> boolean (applied) - usando object en lugar de Map
+  userApplications: Record<string, boolean>;
   applyStatus: 'idle' | 'pending' | 'success' | 'failed';
   fetchStatus: 'idle' | 'pending' | 'success' | 'failed';
   checkStatus: 'idle' | 'pending' | 'success' | 'failed';

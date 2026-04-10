@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Toast } from 'primereact/toast';
-import supabase from '../../config/supabase/supabase';
+import type { AppDispatch } from '../../store/store';
+import { fetchUploadDocument, fetchAddDocument } from '../../store/document/thunks';
 import type { RootState } from '../../store/store';
 import type {
   ScholarshipRequirementStatus,
@@ -34,6 +35,7 @@ export default function ScholarshipApplicationDocuments() {
   const location = useLocation();
   const toastRef = useRef<Toast>(null);
   const { profile } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
 
   const [state, setState] = useState<ScholarshipApplicationState>({
     requirements: [],
@@ -153,38 +155,25 @@ export default function ScholarshipApplicationDocuments() {
       }
 
       const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const filePath = `${profile.id}/${Date.now()}-${cleanName}`;
+      const fileNameToUpload = `${Date.now()}-${cleanName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('documents_users')
-        .upload(filePath, file, { upsert: false });
+      const publicUrl = await dispatch(
+        fetchUploadDocument({ profileId: profile.id, file, fileName: fileNameToUpload })
+      ).unwrap();
 
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const publicUrl = `${supabaseUrl}/storage/v1/object/public/documents_users/${filePath}`;
-
-      const { data: savedDoc, error: saveError } = await supabase
-        .from('documents')
-        .insert({
+      const savedDoc = await dispatch(
+        fetchAddDocument({
           profile_id: profile.id,
           document_path: publicUrl,
           enrollment_requirement_id: requirement.enrollmentReqId,
         })
-        .select('id')
-        .single();
-
-      if (saveError) {
-        throw saveError;
-      }
+      ).unwrap();
 
       updateRequirementInState(requirementId, (req) => ({
         ...req,
         hasExistingDocument: true,
         existingDocument: {
-          id: savedDoc.id,
+          id: savedDoc.id!,
           profile_id: profile.id,
           document_path: publicUrl,
           enrollment_requirement_id: requirement.enrollmentReqId,

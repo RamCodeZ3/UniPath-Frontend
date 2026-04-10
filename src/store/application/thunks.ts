@@ -13,13 +13,11 @@ export const fetchCreateApplication = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      // Primero verificar que no haya aplicado
       const alreadyApplied = await isUserAppliedToUniversity(profileId, universityId);
       if (alreadyApplied) {
         return rejectWithValue('Ya has aplicado a esta universidad');
       }
 
-      // Crear la aplicación
       const application = await createApplication(profileId, universityId);
       return application;
     } catch (error) {
@@ -55,8 +53,7 @@ export const fetchCheckIfApplied = createAsyncThunk(
       };
       return result;
     } catch (error) {
-      // Silenciar el error y retornar que no ha aplicado (para permitir flujo)
-      console.warn('[fetchCheckIfApplied] Error checking:', error);
+
       const result: ApplicationCheckResult = {
         universityId,
         applied: false,

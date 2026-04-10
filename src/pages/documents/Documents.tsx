@@ -23,27 +23,22 @@ export default function Documents() {
   const dispatch = useDispatch<AppDispatch>();
   const toastRef = useRef(null);
   
-  // Redux state
   const { documents, status, error } = useSelector((state: RootState) => state.document);
   const { profile } = useSelector((state: RootState) => state.auth);
 
-  // Estado para documentos estándar
   const [standardRequirements, setStandardRequirements] = useState<SB_EnrollmentRequirement[]>([]);
   const [loadingStandard, setLoadingStandard] = useState(true);
 
-  // Estado para modal de tipo de documento
   const [showDocumentTypeDialog, setShowDocumentTypeDialog] = useState(false);
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [selectedRequirement, setSelectedRequirement] = useState<SB_EnrollmentRequirement | null>(null);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
 
-  // Al montar: cargar documentos del usuario y requerimientos estándar
   useEffect(() => {
     if (profile?.id) {
       dispatch(fetchGetDocumentsByProfileId(profile.id));
     }
     
-    // Cargar documentos estándar
     const loadStandardRequirements = async () => {
       try {
         setLoadingStandard(true);
@@ -59,7 +54,6 @@ export default function Documents() {
     loadStandardRequirements();
   }, [profile?.id, dispatch]);
 
-  // Verificar si un documento estándar ya está subido
   const getDocumentForRequirement = (requirementId: string) => {
     return documents.find(
       (doc) => doc.enrollment_requirement_id?.toLowerCase() === requirementId.toLowerCase()
@@ -85,7 +79,6 @@ export default function Documents() {
       return;
     }
 
-    // Verificar límite de documentos
     if (documents.length >= MAX_DOCUMENTS) {
       const toastRef_current = toastRef.current as any;
       if (toastRef_current) {
@@ -128,7 +121,6 @@ export default function Documents() {
     setIsUploadingDocument(true);
 
     try {
-      // 1. Subir archivo a storage
       const publicUrlResult = await dispatch(
         fetchUploadDocument({
           profileId: profile.id,
@@ -138,7 +130,6 @@ export default function Documents() {
       );
 
       if (publicUrlResult.payload && typeof publicUrlResult.payload === 'string') {
-        // 2. Crear registro en BD con enrollment_requirement_id
         const { error: saveError } = await supabase
           .from('documents')
           .insert({
@@ -151,12 +142,10 @@ export default function Documents() {
           throw saveError;
         }
 
-        // 3. Recargar lista después de guardar
         setTimeout(() => {
           dispatch(fetchGetDocumentsByProfileId(profile.id));
         }, 500);
 
-        // 4. Mostrar éxito
         const toastRef_current = toastRef.current as any;
         if (toastRef_current) {
           toastRef_current.show({
@@ -167,7 +156,6 @@ export default function Documents() {
           });
         }
 
-        // Cerrar diálogo y resetear
         setShowDocumentTypeDialog(false);
         setCurrentFile(null);
         setSelectedRequirement(null);
@@ -190,14 +178,12 @@ export default function Documents() {
     }
   };
 
-  // Subir documento directamente para un requerimiento específico
   const handleUploadForRequirement = async (requirement: SB_EnrollmentRequirement, file: File) => {
     if (!profile?.id) return;
 
     setIsUploadingDocument(true);
 
     try {
-      // 1. Subir archivo a storage
       const publicUrlResult = await dispatch(
         fetchUploadDocument({
           profileId: profile.id,
@@ -207,7 +193,6 @@ export default function Documents() {
       );
 
       if (publicUrlResult.payload && typeof publicUrlResult.payload === 'string') {
-        // 2. Crear registro en BD
         const { error: saveError } = await supabase
           .from('documents')
           .insert({
@@ -220,7 +205,6 @@ export default function Documents() {
           throw saveError;
         }
 
-        // 3. Recargar lista
         setTimeout(() => {
           dispatch(fetchGetDocumentsByProfileId(profile.id));
         }, 500);
@@ -254,7 +238,6 @@ export default function Documents() {
   const handleDeleteDocument = (documentId: string) => {
     if (profile?.id) {
       dispatch(fetchDeleteDocument(documentId)).then(() => {
-        // Recargar lista después de eliminar
         dispatch(fetchGetDocumentsByProfileId(profile.id));
         
         const toastRef_current = toastRef.current as any;

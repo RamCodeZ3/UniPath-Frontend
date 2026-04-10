@@ -1,4 +1,3 @@
-// Modelo principal de Universidad
 export interface SB_University {
   id: string;
   name: string;
@@ -16,12 +15,10 @@ export interface SB_University {
   created_at?: string;
 }
 
-// Tipos para los filtros
 export type UniversityType = 'publica' | 'privada';
 export type UniversityModality = 'presencial' | 'virtual' | 'semipresencial';
 export type UniversityStatus = 'activa' | 'inactiva' | 'en_revision';
 
-// Requisitos de inscripción (tabla base)
 export interface SB_EnrollmentRequirement {
   id: string;
   description: string | null;
@@ -32,17 +29,14 @@ export interface SB_EnrollmentRequirement {
   last_updated?: string;
 }
 
-// Relación universidad-requisitos (tabla intermedia con notas)
 export interface SB_UniversityRequirement {
   id: string;
   university_id: string;
   requirement_id: string;
   notas: string | null;
-  // Relación expandida
   enrollment_requirement?: SB_EnrollmentRequirement;
 }
 
-// Universidad con datos relacionados (para el detalle)
 export interface UniversityWithDetails extends SB_University {
   university_requirements?: SB_UniversityRequirement[];
   overviews?: {
@@ -52,7 +46,6 @@ export interface UniversityWithDetails extends SB_University {
   }[];
 }
 
-// Interfaz para los filtros de búsqueda
 export interface UniversityFilters {
   type?: UniversityType | '';
   modality?: UniversityModality[];
@@ -63,7 +56,6 @@ export interface UniversityFilters {
   limit?: number;
 }
 
-// Opciones para los selects/dropdowns
 export const UNIVERSITY_TYPE_OPTIONS = [
   { label: 'Todas', value: '' },
   { label: 'Pública', value: 'publica' },

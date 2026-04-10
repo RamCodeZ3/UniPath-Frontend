@@ -36,7 +36,7 @@ const normalizeText = (text: string): string => {
   return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 };
 
-export const UniversityGallery = () => {
+export function UniversityGallery(){
   
   const [allUniversities, setAllUniversities] = useState<SB_University[]>([]);
   const [filters, setFilters] = useState<FilterType>(initialFilters);

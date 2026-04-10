@@ -9,13 +9,13 @@ interface ScholarshipRequirementItemProps {
   isLoading: boolean;
 }
 
-export const ScholarshipRequirementItem = ({
+export function ScholarshipRequirementItem({
   requirement,
   hasExisting,
   existingDoc,
   onUpload,
   isLoading,
-}: ScholarshipRequirementItemProps) => {
+}: ScholarshipRequirementItemProps){
   const getFileName = (path: string) => {
     const parts = path.split('/');
     const fileName = parts[parts.length - 1];

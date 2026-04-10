@@ -54,20 +54,17 @@ export const ApplyButton = ({
     (state: RootState) => state.application.userApplications
   );
 
-  // Verificar si ya aplicó al montar
   useEffect(() => {
     if (profileId && universityId) {
       setIsChecking(true);
       dispatch(fetchCheckIfApplied({ profileId, universityId }))
         .catch((err) => {
-          // Silenciar error de CORS/RLS - el usuario puede intentar aplicar de todas formas
           console.warn('[ApplyButton] Error checking if applied:', err);
         })
         .finally(() => setIsChecking(false));
     }
   }, [profileId, universityId, dispatch]);
 
-  // Actualizar estado de aplicación basado en Redux
   useEffect(() => {
     const applied = userApplications[universityId] ?? false;
     setIsAlreadyApplied(applied);
@@ -100,7 +97,6 @@ export const ApplyButton = ({
       return;
     }
 
-    // Navegar a la página de aplicación con documentos
     navigate(`/apply/${universityId}`, {
       state: { universityName },
     });
@@ -109,11 +105,9 @@ export const ApplyButton = ({
   const isLoading = checkStatus === 'pending' || isChecking;
   const isDisabled = isLoading || isAlreadyApplied;
 
-  // Clases base
   const baseClasses =
     'inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed';
 
-  // Clases por variante
   const variantClasses =
     variant === 'primary'
       ? `${

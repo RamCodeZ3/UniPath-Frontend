@@ -1,15 +1,7 @@
 import supabase from '../../config/supabase/supabase';
+import type { SB_ProfileModel } from '../models/profileModel';
 
-export interface Profile {
-  id: string;
-  user_id: string;
-  name: string | null;
-  birthdate: string | null;
-  number: string | null;
-  genre: string | null;
-}
-
-export const getProfile = async (userId: string): Promise<Profile | null> => {
+export const getProfile = async (userId: string): Promise<SB_ProfileModel | null> => {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -20,11 +12,7 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
   return data;
 };
 
-/**
- * Verifica si el perfil del usuario está completo
- * Un perfil se considera completo si tiene: birthdate, number y genre
- */
-export const isProfileComplete = (profile: Profile | null): boolean => {
+export const isProfileComplete = (profile: SB_ProfileModel | null): boolean => {
   if (!profile) return false;
   
   return !!(
@@ -34,11 +22,7 @@ export const isProfileComplete = (profile: Profile | null): boolean => {
   );
 };
 
-/**
- * Obtiene el perfil y verifica si está completo
- * Retorna { profile, isComplete }
- */
-export const getProfileWithStatus = async (userId: string): Promise<{ profile: Profile | null; isComplete: boolean }> => {
+export const getProfileWithStatus = async (userId: string): Promise<{ profile: SB_ProfileModel | null; isComplete: boolean }> => {
   const profile = await getProfile(userId);
   return {
     profile,
@@ -64,7 +48,6 @@ export const createProfile = async (userId: string, profileData: {
   number: string;
   genre: string;
 }) => {
-  // Usar upsert: inserta si no existe, actualiza si ya existe
   const { data, error } = await supabase
     .from('profiles')
     .upsert(

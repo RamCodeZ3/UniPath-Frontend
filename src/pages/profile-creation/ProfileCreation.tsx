@@ -150,7 +150,6 @@ export const ProfileCreation = () => {
   const [localUser, setLocalUser] = useState<any>(null);
   const storeUser = useSelector((state: RootState) => state.auth.user);
   
-  // Usar el user del store si existe, sino el local
   const user = storeUser || localUser;
   const userEmail = user?.email;
 
@@ -170,26 +169,22 @@ export const ProfileCreation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  // Obtener la sesión al cargar
   useEffect(() => {
     const initSession = async () => {
       try {
         const session = await getSession();
         if (session?.user) {
           const user = session.user;
-          console.log('[ProfileCreation] Sesión obtenida:', user.email);
           setLocalUser(user);
           dispatch(setUser(user));
           dispatch(setEmailConfirmed(!!user.email_confirmed_at));
 
           const profile = await getProfile(user.id);
           if (profile) {
-            console.log('[ProfileCreation] Perfil ya existe, redirigiendo a /dashboard');
             navigate('/dashboard', { replace: true });
             return;
           }
         } else {
-          console.log('[ProfileCreation] No hay sesión, redirigiendo a /');
           window.location.href = '/';
         }
       } catch (error) {
@@ -346,7 +341,6 @@ export const ProfileCreation = () => {
     return age;
   };
 
-  // Mostrar loading mientras obtiene la sesión
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">

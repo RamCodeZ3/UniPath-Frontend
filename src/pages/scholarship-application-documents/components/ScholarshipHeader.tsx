@@ -3,7 +3,7 @@ interface ScholarshipHeaderProps {
   onBack: () => void;
 }
 
-export const ScholarshipHeader = ({ scholarshipTitle, onBack }: ScholarshipHeaderProps) => {
+export function ScholarshipHeader({ scholarshipTitle, onBack }: ScholarshipHeaderProps){
   return (
     <div className="flex items-center justify-between mb-8">
       <div>
